@@ -1,0 +1,6 @@
+{
+  "name": "The Decor Diary — Online Home Decor Store & Editorial Journal",
+  "description": "Discover aesthetic room accessories, modern interior design trends, minimalist furniture, and unique online home decor at The Decor Diary (thedecordiary.store).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

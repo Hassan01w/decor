@@ -9,7 +9,7 @@ interface RichContentRendererProps {
 }
 
 export const RichContentRenderer: React.FC<RichContentRendererProps> = ({ blocks, articleTitle }) => {
-  if (!blocks || blocks.length === 0) {
+  if (!blocks || (Array.isArray(blocks) && blocks.length === 0)) {
     return (
       <p className="text-base text-[#4A423B] leading-relaxed italic">
         No content has been published for this article yet.
@@ -17,26 +17,43 @@ export const RichContentRenderer: React.FC<RichContentRendererProps> = ({ blocks
     );
   }
 
+  if (typeof blocks === 'string') {
+    return (
+      <div className="article-content space-y-4 text-[#3B342F] text-base sm:text-lg leading-[1.8]">
+        <p>{blocks}</p>
+      </div>
+    );
+  }
+
+  if (!Array.isArray(blocks)) {
+    return null;
+  }
+
   return (
     <div className="article-content space-y-7 text-[#3B342F] text-base sm:text-lg leading-[1.8] font-normal">
       {blocks.map((block, index) => {
-        const { type, content, id } = block;
+        if (!block) return null;
+        const { type, id } = block;
+        const content = block.content || {};
 
         switch (type) {
           case 'paragraph': {
             // First paragraph dropcap styling for editorial charm
             const isFirst = index === 0;
+            const text = content.text || '';
+            if (!text) return null;
             return (
               <p 
                 key={id || index} 
                 className={`${isFirst ? 'editorial-dropcap text-lg sm:text-xl font-normal text-[#2D2A26]' : 'text-base sm:text-lg'} leading-relaxed text-[#3B342F]`}
               >
-                {content.text}
+                {text}
               </p>
             );
           }
 
           case 'heading2':
+            if (!content.text) return null;
             return (
               <h2 
                 key={id || index} 
@@ -47,6 +64,7 @@ export const RichContentRenderer: React.FC<RichContentRendererProps> = ({ blocks
             );
 
           case 'heading3':
+            if (!content.text) return null;
             return (
               <h3 
                 key={id || index} 
@@ -57,10 +75,11 @@ export const RichContentRenderer: React.FC<RichContentRendererProps> = ({ blocks
             );
 
           case 'image': {
+            if (!content.url) return null;
             const pinUrl = getPinterestShareUrl(
               window.location.href,
               content.url || '',
-              content.caption || articleTitle
+              content.caption || articleTitle || 'The Decor Diary'
             );
 
             return (
@@ -94,6 +113,7 @@ export const RichContentRenderer: React.FC<RichContentRendererProps> = ({ blocks
           }
 
           case 'quote':
+            if (!content.text) return null;
             return (
               <blockquote 
                 key={id || index} 
@@ -138,17 +158,21 @@ export const RichContentRenderer: React.FC<RichContentRendererProps> = ({ blocks
                   <Icon className={`w-5 h-5 shrink-0 ${iconColor}`} />
                   <span>{content.calloutTitle || 'Editorial Note'}</span>
                 </div>
-                <p className="text-sm sm:text-base leading-relaxed pl-7">
-                  {content.text}
-                </p>
+                {content.text && (
+                  <p className="text-sm sm:text-base leading-relaxed pl-7">
+                    {content.text}
+                  </p>
+                )}
               </div>
             );
           }
 
-          case 'bullet_list':
+          case 'bullet_list': {
+            const items = Array.isArray(content.items) ? content.items.filter(Boolean) : [];
+            if (items.length === 0) return null;
             return (
               <ul key={id || index} className="my-4 space-y-2.5 list-none pl-2">
-                {content.items?.map((item, i) => (
+                {items.map((item, i) => (
                   <li key={i} className="flex items-start gap-3 text-base sm:text-lg leading-relaxed">
                     <span className="w-2 h-2 rounded-full bg-[#8C6D53] shrink-0 mt-2.5" />
                     <span>{item}</span>
@@ -156,11 +180,14 @@ export const RichContentRenderer: React.FC<RichContentRendererProps> = ({ blocks
                 ))}
               </ul>
             );
+          }
 
-          case 'number_list':
+          case 'number_list': {
+            const items = Array.isArray(content.items) ? content.items.filter(Boolean) : [];
+            if (items.length === 0) return null;
             return (
               <ol key={id || index} className="my-4 space-y-3 list-none counter-reset pl-2">
-                {content.items?.map((item, i) => (
+                {items.map((item, i) => (
                   <li key={i} className="flex items-start gap-3.5 text-base sm:text-lg leading-relaxed">
                     <span className="w-6 h-6 rounded-full bg-[#EFE9E1] text-[#8C6D53] font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
                       {i + 1}
@@ -170,8 +197,10 @@ export const RichContentRenderer: React.FC<RichContentRendererProps> = ({ blocks
                 ))}
               </ol>
             );
+          }
 
           case 'shoppable_product':
+            if (!content.productTitle) return null;
             return (
               <div key={id || index} className="my-8 flex flex-col sm:flex-row items-center gap-6 p-4 sm:p-6 bg-white rounded-2xl border border-[#E8DFD5] shadow-xs hover:shadow-md transition-shadow">
                 {content.productImage && (
@@ -205,6 +234,7 @@ export const RichContentRenderer: React.FC<RichContentRendererProps> = ({ blocks
             );
 
           case 'button':
+            if (!content.buttonText) return null;
             return (
               <div key={id || index} className="my-6 text-center sm:text-left">
                 <a
@@ -220,10 +250,11 @@ export const RichContentRenderer: React.FC<RichContentRendererProps> = ({ blocks
             );
 
           case 'video':
+            if (!content.embedUrl) return null;
             return (
               <div key={id || index} className="my-8 aspect-video rounded-2xl overflow-hidden shadow-lg border border-[#E8DFD5]">
                 <iframe
-                  src={content.embedUrl || 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ'}
+                  src={content.embedUrl}
                   title="Article Video"
                   className="w-full h-full"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -233,11 +264,12 @@ export const RichContentRenderer: React.FC<RichContentRendererProps> = ({ blocks
             );
 
           case 'gallery': {
-            if (!content.images || content.images.length === 0) return null;
-            const gridCols = content.images.length === 2 ? 'grid-cols-1 sm:grid-cols-2' : content.images.length === 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
+            const images = Array.isArray(content.images) ? content.images.filter(img => img && img.url) : [];
+            if (images.length === 0) return null;
+            const gridCols = images.length === 2 ? 'grid-cols-1 sm:grid-cols-2' : images.length === 3 ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
             return (
               <div key={id || index} className={`my-8 grid gap-4 ${gridCols}`}>
-                {content.images.map((img, i) => (
+                {images.map((img, i) => (
                   <div key={i} className="relative overflow-hidden rounded-2xl bg-[#EFE9E1] border border-[#E8DFD5] group aspect-square">
                     <img
                       src={img.url}

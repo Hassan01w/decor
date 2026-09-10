@@ -156,9 +156,9 @@ export const AdminPostsList: React.FC = () => {
     // Search query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      const titleMatch = post.title.toLowerCase().includes(q);
-      const authorMatch = post.author?.name.toLowerCase().includes(q);
-      const tagMatch = post.tags?.some(t => t.toLowerCase().includes(q));
+      const titleMatch = (post.title || '').toLowerCase().includes(q);
+      const authorMatch = (post.author?.name || '').toLowerCase().includes(q);
+      const tagMatch = post.tags?.some(t => (t || '').toLowerCase().includes(q));
       if (!titleMatch && !authorMatch && !tagMatch) return false;
     }
 
@@ -531,12 +531,12 @@ export const AdminPostsList: React.FC = () => {
                       <td className="py-4 px-4 whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <img
-                            src={post.author.avatar}
-                            alt={post.author.name}
+                            src={post.author?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80'}
+                            alt={post.author?.name || 'Author'}
                             className="w-6 h-6 rounded-full object-cover"
                           />
                           <span className="text-xs font-semibold text-[#2D2A26]">
-                            {post.author.name}
+                            {post.author?.name || 'Editorial Team'}
                           </span>
                         </div>
                       </td>

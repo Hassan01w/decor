@@ -8,6 +8,7 @@ import { ToastContainer } from './components/common/ToastContainer';
 import { CookieConsentBanner } from './components/common/CookieConsentBanner';
 import { AdminSyncBanner } from './components/common/AdminSyncBanner';
 import { MobileBottomNav } from './components/common/MobileBottomNav';
+import { MobileMenuDrawer } from './components/common/MobileMenuDrawer';
 
 // Public Pages (Lazy Loaded)
 const HomePage = lazy(() => import('./pages/HomePage').then(module => ({ default: module.HomePage })));
@@ -142,8 +143,9 @@ export function App() {
               return <AdminPostEditor />;
             }
             if (baseRoute.startsWith('/admin/posts/edit/')) {
-              const postId = baseRoute.replace('/admin/posts/edit/', '');
-              return <AdminPostEditor postId={postId} />;
+              const rawPostId = baseRoute.replace('/admin/posts/edit/', '');
+              const postId = decodeURIComponent(rawPostId).replace(/\/+$/, '');
+              return <AdminPostEditor key={postId} postId={postId} />;
             }
             if (baseRoute === '/admin/posts') {
               return <AdminPostsList />;
@@ -196,17 +198,21 @@ export function App() {
     } else if (baseRoute === '/contact') {
       pageComponent = <ContactPage />;
     } else if (baseRoute.startsWith('/blog/')) {
-      const slug = baseRoute.replace('/blog/', '');
-      pageComponent = <ArticleDetailPage slug={slug} />;
+      const rawSlug = baseRoute.replace('/blog/', '');
+      const slug = decodeURIComponent(rawSlug).replace(/\/+$/, '');
+      pageComponent = <ArticleDetailPage key={slug} slug={slug} />;
     } else if (baseRoute.startsWith('/post/')) {
-      const slug = baseRoute.replace('/post/', '');
-      pageComponent = <ArticleDetailPage slug={slug} />;
+      const rawSlug = baseRoute.replace('/post/', '');
+      const slug = decodeURIComponent(rawSlug).replace(/\/+$/, '');
+      pageComponent = <ArticleDetailPage key={slug} slug={slug} />;
     } else if (baseRoute.startsWith('/article/')) {
-      const slug = baseRoute.replace('/article/', '');
-      pageComponent = <ArticleDetailPage slug={slug} />;
+      const rawSlug = baseRoute.replace('/article/', '');
+      const slug = decodeURIComponent(rawSlug).replace(/\/+$/, '');
+      pageComponent = <ArticleDetailPage key={slug} slug={slug} />;
     } else if (baseRoute.startsWith('/category/')) {
-      const slug = baseRoute.replace('/category/', '');
-      pageComponent = <CategoryPage slug={slug} />;
+      const rawSlug = baseRoute.replace('/category/', '');
+      const slug = decodeURIComponent(rawSlug).replace(/\/+$/, '');
+      pageComponent = <CategoryPage key={slug} slug={slug} />;
     } else {
       pageComponent = <HomePage />;
     }
@@ -239,6 +245,11 @@ export function App() {
       <SavedPostsDrawer 
         isOpen={isSavedDrawerOpen} 
         onClose={() => setIsSavedDrawerOpen(false)} 
+      />
+      <MobileMenuDrawer
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        onOpenSavedDrawer={() => setIsSavedDrawerOpen(true)}
       />
       <ToastContainer />
       <CookieConsentBanner />

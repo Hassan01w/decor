@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useBlog } from '../../context/BlogContext';
 import { BlogPost, ContentBlock, BlockType, Author } from '../../types';
 import { AUTHORS } from '../../services/initialData';
@@ -50,7 +50,25 @@ interface AdminPostEditorProps {
 export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
   const { posts, categories, mediaLibrary, currentUser, savePost, navigate, showToast, setPreviewPostData } = useBlog();
 
-  const existingPost = postId ? posts.find(p => p.id === postId) : undefined;
+  const cleanPostId = useMemo(() => {
+    if (!postId) return '';
+    try {
+      return decodeURIComponent(postId).trim().replace(/\/+$/, '');
+    } catch {
+      return postId.trim().replace(/\/+$/, '');
+    }
+  }, [postId]);
+
+  const existingPost = useMemo(() => {
+    if (!cleanPostId) return undefined;
+    const lower = cleanPostId.toLowerCase();
+    return posts.find(p => 
+      p.id === cleanPostId || 
+      p.slug === cleanPostId || 
+      p.id?.toLowerCase() === lower || 
+      p.slug?.toLowerCase() === lower
+    );
+  }, [posts, cleanPostId]);
 
   // Permission check
   const isAuthorized = canEditPost(currentUser, existingPost);
@@ -60,7 +78,15 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
   const [slug, setSlug] = useState(existingPost?.slug || '');
   const [excerpt, setExcerpt] = useState(existingPost?.excerpt || '');
   const [categoryId, setCategoryId] = useState(existingPost?.categoryId || categories[0]?.id || 'decor');
-  const [tagsInput, setTagsInput] = useState(existingPost?.tags?.join(', ') || 'Home Decor, Modern Living');
+  const [tagsInput, setTagsInput] = useState(() => {
+    if (Array.isArray(existingPost?.tags)) {
+      return existingPost.tags.join(', ');
+    }
+    if (typeof existingPost?.tags === 'string') {
+      return existingPost.tags;
+    }
+    return 'Home Decor, Modern Living';
+  });
   
   // Set author: if author role, default to their profile
   const defaultAuthor = currentUser?.authorId 
@@ -88,15 +114,22 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
   const [ogImage, setOgImage] = useState(existingPost?.seo?.ogImage || '');
 
   // Content Blocks
-  const [blocks, setBlocks] = useState<ContentBlock[]>(
-    existingPost?.contentBlocks || [
+  const [blocks, setBlocks] = useState<ContentBlock[]>(() => {
+    if (existingPost?.contentBlocks && Array.isArray(existingPost.contentBlocks) && existingPost.contentBlocks.length > 0) {
+      return existingPost.contentBlocks.map((b, idx) => ({
+        id: b.id || `block-${idx}-${Date.now()}`,
+        type: b.type || 'paragraph',
+        content: b.content || { text: '' }
+      }));
+    }
+    return [
       {
         id: 'block-1',
         type: 'paragraph',
         content: { text: 'Start writing your inspiring home and lifestyle story here...' }
       }
-    ]
-  );
+    ];
+  });
 
   // Modals & Preview viewport states
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -165,11 +198,13 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
 
   const updateBlockContent = (index: number, newContent: Partial<ContentBlock['content']>) => {
     const updated = [...blocks];
-    updated[index] = {
-      ...updated[index],
-      content: { ...updated[index].content, ...newContent }
-    };
-    setBlocks(updated);
+    if (updated[index]) {
+      updated[index] = {
+        ...updated[index],
+        content: { ...(updated[index].content || {}), ...newContent }
+      };
+      setBlocks(updated);
+    }
   };
 
   const removeBlock = (index: number) => {
@@ -289,6 +324,37 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
     navigator.clipboard.writeText(previewUrl);
     showToast('Temporary unlisted preview URL copied to clipboard!', 'success');
   };
+
+  // If postId was passed but post was not found in CMS
+  if (cleanPostId && !existingPost) {
+    return (
+      <div className="p-8 sm:p-16 max-w-2xl mx-auto text-center space-y-6">
+        <div className="w-16 h-16 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center mx-auto text-2xl font-bold font-serif">
+          ?
+        </div>
+        <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#211E1B]">
+          Article Not Found
+        </h2>
+        <p className="text-sm text-[#7D7368] leading-relaxed">
+          The requested article (ID or slug: <code className="px-2 py-0.5 bg-stone-100 rounded font-mono text-xs font-semibold">{cleanPostId}</code>) could not be found in your database. It may have been deleted or the link is invalid.
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <button
+            onClick={() => navigate('/admin/posts')}
+            className="px-6 py-2.5 bg-[#8C6D53] hover:bg-[#735842] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+          >
+            &larr; Back to All Articles
+          </button>
+          <button
+            onClick={() => navigate('/admin/posts/new')}
+            className="px-6 py-2.5 bg-white border border-[#D9CFC4] hover:bg-[#F7F4EE] text-[#211E1B] rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+          >
+            + Create New Article
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // If user is restricted
   if (existingPost && !isAuthorized) {
@@ -447,9 +513,11 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
 
             {/* Rendered Block Editors */}
             <div className="space-y-4">
-              {blocks.map((block, idx) => (
+              {blocks.map((block, idx) => {
+                const blockContent = block.content || {};
+                return (
                 <div
-                  key={block.id}
+                  key={block.id || `blk-${idx}`}
                   className="bg-white rounded-2xl p-5 border border-[#E8DFD5] shadow-xs group hover:border-[#8C6D53] transition-all relative"
                 >
                   {/* Block Header & Reorder Toolbar */}
@@ -458,7 +526,7 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                       <span className="w-5 h-5 rounded-full bg-[#EFE9E1] text-[#8C6D53] flex items-center justify-center text-[10px]">
                         {idx + 1}
                       </span>
-                      {block.type.replace('_', ' ')}
+                      {block.type?.replace?.('_', ' ') || block.type}
                     </span>
 
                     <div className="flex items-center gap-1">
@@ -495,7 +563,7 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                   {block.type === 'paragraph' && (
                     <textarea
                       rows={4}
-                      value={block.content.text || ''}
+                      value={blockContent.text || ''}
                       onChange={(e) => updateBlockContent(idx, { text: e.target.value })}
                       placeholder="Write your paragraph content..."
                       className="w-full text-sm sm:text-base leading-relaxed text-[#2D2A26] focus:outline-none bg-transparent"
@@ -505,7 +573,7 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                   {block.type === 'heading2' && (
                     <input
                       type="text"
-                      value={block.content.text || ''}
+                      value={blockContent.text || ''}
                       onChange={(e) => updateBlockContent(idx, { text: e.target.value })}
                       placeholder="Section Heading (H2)..."
                       className="w-full font-serif text-xl sm:text-2xl font-bold text-[#211E1B] focus:outline-none bg-transparent"
@@ -515,7 +583,7 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                   {block.type === 'heading3' && (
                     <input
                       type="text"
-                      value={block.content.text || ''}
+                      value={blockContent.text || ''}
                       onChange={(e) => updateBlockContent(idx, { text: e.target.value })}
                       placeholder="Subheading (H3)..."
                       className="w-full font-serif text-lg font-bold text-[#211E1B] focus:outline-none bg-transparent"
@@ -526,14 +594,14 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                     <div className="space-y-2 p-3 bg-[#FAF8F5] rounded-xl border-l-4 border-[#8C6D53]">
                       <textarea
                         rows={2}
-                        value={block.content.text || ''}
+                        value={blockContent.text || ''}
                         onChange={(e) => updateBlockContent(idx, { text: e.target.value })}
                         placeholder="Inspirational pull quote text..."
                         className="w-full text-base font-serif italic text-[#2D2A26] focus:outline-none bg-transparent"
                       />
                       <input
                         type="text"
-                        value={block.content.author || ''}
+                        value={blockContent.author || ''}
                         onChange={(e) => updateBlockContent(idx, { author: e.target.value })}
                         placeholder="Quote attribution (e.g. William Morris)"
                         className="w-full text-xs font-semibold text-[#8C6D53] focus:outline-none bg-transparent"
@@ -546,7 +614,7 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                       <div className="flex items-center gap-3">
                         <input
                           type="text"
-                          value={block.content.url || ''}
+                          value={blockContent.url || ''}
                           onChange={(e) => updateBlockContent(idx, { url: e.target.value })}
                           placeholder="Image URL (https://images.unsplash.com/...)"
                           className="w-full px-3 py-2 bg-[#FAF8F5] border border-[#E8DFD5] rounded-xl text-xs"
@@ -560,23 +628,23 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                         </button>
                       </div>
 
-                      {block.content.url && (
+                      {blockContent.url && (
                         <div className="relative aspect-16/9 rounded-xl overflow-hidden bg-stone-100 max-h-56">
-                          <img src={block.content.url} alt="preview" className="w-full h-full object-cover" />
+                          <img src={blockContent.url} alt="preview" className="w-full h-full object-cover" />
                         </div>
                       )}
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <input
                           type="text"
-                          value={block.content.caption || ''}
+                          value={blockContent.caption || ''}
                           onChange={(e) => updateBlockContent(idx, { caption: e.target.value })}
                           placeholder="Editorial caption shown under image..."
                           className="w-full px-3 py-1.5 bg-[#FAF8F5] border border-[#E8DFD5] rounded-lg text-xs"
                         />
                         <input
                           type="text"
-                          value={block.content.alt || ''}
+                          value={blockContent.alt || ''}
                           onChange={(e) => updateBlockContent(idx, { alt: e.target.value })}
                           placeholder="Image SEO Alt text..."
                           className="w-full px-3 py-1.5 bg-[#FAF8F5] border border-[#E8DFD5] rounded-lg text-xs"
@@ -588,12 +656,12 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                   {block.type === 'gallery' && (
                     <div className="space-y-4">
                       <p className="text-xs text-[#8A7E73] font-bold">Manage Gallery Images (2-3 recommended)</p>
-                      {block.content.images?.map((img, imgIdx) => (
+                      {blockContent.images?.map((img, imgIdx) => (
                         <div key={imgIdx} className="space-y-2 p-3 bg-[#FAF8F5] border border-[#E8DFD5] rounded-xl relative">
                           <button
                             type="button"
                             onClick={() => {
-                              const newImages = [...(block.content.images || [])];
+                              const newImages = [...(blockContent.images || [])];
                               newImages.splice(imgIdx, 1);
                               updateBlockContent(idx, { images: newImages });
                             }}
@@ -610,7 +678,7 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                                 type="text"
                                 value={img.url || ''}
                                 onChange={(e) => {
-                                  const newImages = [...(block.content.images || [])];
+                                  const newImages = [...(blockContent.images || [])];
                                   newImages[imgIdx] = { ...img, url: e.target.value };
                                   updateBlockContent(idx, { images: newImages });
                                 }}
@@ -621,7 +689,7 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                                 type="text"
                                 value={img.caption || ''}
                                 onChange={(e) => {
-                                  const newImages = [...(block.content.images || [])];
+                                  const newImages = [...(blockContent.images || [])];
                                   newImages[imgIdx] = { ...img, caption: e.target.value };
                                   updateBlockContent(idx, { images: newImages });
                                 }}
@@ -635,7 +703,7 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                       <button
                         type="button"
                         onClick={() => {
-                          const newImages = [...(block.content.images || []), { url: '', caption: '' }];
+                          const newImages = [...(blockContent.images || []), { url: '', caption: '' }];
                           updateBlockContent(idx, { images: newImages });
                         }}
                         className="w-full py-2 bg-white border border-dashed border-[#D9CFC4] hover:border-[#8C6D53] text-[#8C6D53] rounded-xl text-xs font-bold transition-colors"
@@ -650,12 +718,12 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                       <div className="flex items-center justify-between">
                         <input
                           type="text"
-                          value={block.content.calloutTitle || 'Styling Tip'}
+                          value={blockContent.calloutTitle || 'Styling Tip'}
                           onChange={(e) => updateBlockContent(idx, { calloutTitle: e.target.value })}
                           className="font-serif text-sm font-bold text-[#8C6D53] bg-transparent focus:outline-none"
                         />
                         <select
-                          value={block.content.calloutType || 'tip'}
+                          value={blockContent.calloutType || 'tip'}
                           onChange={(e) => updateBlockContent(idx, { calloutType: e.target.value as any })}
                           className="text-xs bg-white px-2 py-1 rounded border border-[#E8DFD5]"
                         >
@@ -666,7 +734,7 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                       </div>
                       <textarea
                         rows={3}
-                        value={block.content.text || ''}
+                        value={blockContent.text || ''}
                         onChange={(e) => updateBlockContent(idx, { text: e.target.value })}
                         placeholder="Key recommendation or DIY formula..."
                         className="w-full text-xs sm:text-sm text-[#2D2A26] bg-transparent focus:outline-none leading-relaxed"
@@ -679,7 +747,7 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                       <p className="text-[11px] text-[#8A7E73]">Enter list items separated by newlines:</p>
                       <textarea
                         rows={4}
-                        value={block.content.items?.join('\n') || ''}
+                        value={blockContent.items?.join('\n') || ''}
                         onChange={(e) => updateBlockContent(idx, { items: e.target.value.split('\n').filter(Boolean) })}
                         placeholder="Item 1&#10;Item 2&#10;Item 3"
                         className="w-full text-sm p-3 bg-[#FAF8F5] border border-[#E8DFD5] rounded-xl leading-relaxed"
@@ -692,14 +760,14 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <input
                           type="text"
-                          value={block.content.productTitle || ''}
+                          value={blockContent.productTitle || ''}
                           onChange={(e) => updateBlockContent(idx, { productTitle: e.target.value })}
                           placeholder="Product Title"
                           className="px-3 py-2 bg-[#FAF8F5] border border-[#E8DFD5] rounded-lg text-xs font-bold text-[#211E1B]"
                         />
                         <input
                           type="text"
-                          value={block.content.productBrand || ''}
+                          value={blockContent.productBrand || ''}
                           onChange={(e) => updateBlockContent(idx, { productBrand: e.target.value })}
                           placeholder="Brand Name"
                           className="px-3 py-2 bg-[#FAF8F5] border border-[#E8DFD5] rounded-lg text-xs"
@@ -708,26 +776,26 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <input
                           type="text"
-                          value={block.content.productPrice || ''}
+                          value={blockContent.productPrice || ''}
                           onChange={(e) => updateBlockContent(idx, { productPrice: e.target.value })}
                           placeholder="Price (e.g. $129)"
                           className="px-3 py-2 bg-[#FAF8F5] border border-[#E8DFD5] rounded-lg text-xs"
                         />
                         <input
                           type="text"
-                          value={block.content.productLink || ''}
+                          value={blockContent.productLink || ''}
                           onChange={(e) => updateBlockContent(idx, { productLink: e.target.value })}
                           placeholder="Affiliate or Product Link"
                           className="px-3 py-2 bg-[#FAF8F5] border border-[#E8DFD5] rounded-lg text-xs"
                         />
                       </div>
                       <div className="flex items-center gap-3">
-                        {block.content.productImage && (
-                          <img src={block.content.productImage} alt="product" className="w-12 h-12 rounded object-cover border border-[#E8DFD5]" />
+                        {blockContent.productImage && (
+                          <img src={blockContent.productImage} alt="product" className="w-12 h-12 rounded object-cover border border-[#E8DFD5]" />
                         )}
                         <input
                           type="text"
-                          value={block.content.productImage || ''}
+                          value={blockContent.productImage || ''}
                           onChange={(e) => updateBlockContent(idx, { productImage: e.target.value })}
                           placeholder="Product Image URL"
                           className="flex-1 px-3 py-2 bg-[#FAF8F5] border border-[#E8DFD5] rounded-lg text-xs"
@@ -746,14 +814,14 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-[#FAF8F5] rounded-xl border border-[#E8DFD5]">
                       <input
                         type="text"
-                        value={block.content.buttonText || ''}
+                        value={blockContent.buttonText || ''}
                         onChange={(e) => updateBlockContent(idx, { buttonText: e.target.value })}
                         placeholder="Button Text (e.g. Shop the Look)"
                         className="px-3 py-2 bg-white border border-[#E8DFD5] rounded-lg text-xs"
                       />
                       <input
                         type="text"
-                        value={block.content.buttonUrl || ''}
+                        value={blockContent.buttonUrl || ''}
                         onChange={(e) => updateBlockContent(idx, { buttonUrl: e.target.value })}
                         placeholder="Destination Link URL"
                         className="px-3 py-2 bg-white border border-[#E8DFD5] rounded-lg text-xs"
@@ -761,7 +829,8 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Add Block Bar */}

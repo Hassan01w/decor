@@ -59,8 +59,8 @@ export const AdminDashboard: React.FC = () => {
   // Filtered recent posts
   const filteredRecentPosts = [...posts]
     .filter(p => 
-      p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.slug.toLowerCase().includes(searchQuery.toLowerCase())
+      (p.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (p.slug || '').toLowerCase().includes(searchQuery.toLowerCase())
     )
     .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
     .slice(0, 6);
@@ -515,15 +515,14 @@ export const AdminDashboard: React.FC = () => {
                       </button>
 
                       {/* View on public site */}
-                      <a
-                        href={`/blog/${post.slug}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="p-1.5 rounded-lg bg-[#FAF8F5] hover:bg-[#EFE9E1] text-[#6B635B] border border-[#E8DFD5] transition-colors"
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/blog/${post.slug}`)}
+                        className="p-1.5 rounded-lg bg-[#FAF8F5] hover:bg-[#EFE9E1] text-[#6B635B] border border-[#E8DFD5] transition-colors cursor-pointer"
                         title="View article on public store"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
+                      </button>
 
                       {/* Edit Button */}
                       <button

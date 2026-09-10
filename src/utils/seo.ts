@@ -129,34 +129,45 @@ export function estimateReadingTime(blocks: any[], excerpt?: string, title?: str
   return Math.max(1, Math.ceil(wordCount / 200));
 }
 
-export function generateArticleJsonLd(post: BlogPost, settings: SiteSettings, currentUrl: string) {
+export function generateArticleJsonLd(post: BlogPost, settings?: SiteSettings, currentUrl?: string) {
+  if (!post) return {};
+
+  const authorName = post.author?.name || 'The Decor Diary Editorial Team';
+  const authorRole = post.author?.role || 'Senior Interior Stylist';
+  const authorAvatar = post.author?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80';
+  const seoTitle = post.seo?.seoTitle || post.title || 'Home Decor & Interior Design Article';
+  const ogImage = post.seo?.ogImage || post.featuredImage || 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1600&q=80';
+  const metaDesc = post.seo?.metaDescription || post.excerpt || 'The Decor Diary editorial guide and design inspiration.';
+  const pageUrl = currentUrl || post.seo?.canonicalUrl || `https://thedecordiary.store/blog/${post.slug || post.id}`;
+  const keywords = Array.isArray(post.tags) ? post.tags.join(', ') : (typeof post.tags === 'string' ? post.tags : 'Home Decor, Minimalist Living');
+
   return {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
-    'headline': post.seo.seoTitle || post.title,
-    'image': [post.seo.ogImage || post.featuredImage],
-    'datePublished': post.publishedAt,
-    'dateModified': post.updatedAt || post.publishedAt,
+    'headline': seoTitle,
+    'image': [ogImage],
+    'datePublished': post.publishedAt || new Date().toISOString(),
+    'dateModified': post.updatedAt || post.publishedAt || new Date().toISOString(),
     'author': {
       '@type': 'Person',
-      'name': post.author.name,
-      'jobTitle': post.author.role,
-      'image': post.author.avatar,
+      'name': authorName,
+      'jobTitle': authorRole,
+      'image': authorAvatar,
     },
     'publisher': {
       '@type': 'Organization',
-      'name': settings.siteName,
+      'name': settings?.siteName || 'The Decor Diary',
       'logo': {
         '@type': 'ImageObject',
         'url': 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=400&q=80',
       }
     },
-    'description': post.seo.metaDescription || post.excerpt,
+    'description': metaDesc,
     'mainEntityOfPage': {
       '@type': 'WebPage',
-      '@id': currentUrl || post.seo.canonicalUrl
+      '@id': pageUrl
     },
-    'keywords': post.tags.join(', ')
+    'keywords': keywords
   };
 }
 

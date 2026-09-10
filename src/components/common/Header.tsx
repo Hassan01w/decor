@@ -1,19 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useBlog } from '../../context/BlogContext';
 import { 
   Search, 
   Bookmark, 
   Menu, 
   X, 
-  ChevronRight,
-  Flame,
-  Compass,
-  LayoutDashboard,
-  Sparkles,
-  ArrowRight,
-  ExternalLink,
-  ShieldCheck,
-  Grid
+  ShieldCheck
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -34,10 +26,7 @@ export const Header: React.FC<HeaderProps> = ({
     navigate, 
     setIsSearchOpen, 
     savedPostIds, 
-    categories,
-    publishedPosts,
-    isAdminAuthenticated,
-    currentUser
+    isAdminAuthenticated
   } = useBlog();
 
   const [internalMenuOpen, setInternalMenuOpen] = useState(false);
@@ -52,31 +41,6 @@ export const Header: React.FC<HeaderProps> = ({
     }
   };
 
-  const [mobileSearchQuery, setMobileSearchQuery] = useState('');
-
-  // Close drawer on escape key
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isMenuOpen) {
-        setMenuOpen(false);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isMenuOpen]);
-
-  // Prevent background scroll when mobile drawer is open
-  useEffect(() => {
-    if (isMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isMenuOpen]);
-
   const activeNavItems = navigation
     .filter(item => item.isEnabled)
     .sort((a, b) => a.order - b.order);
@@ -88,17 +52,6 @@ export const Header: React.FC<HeaderProps> = ({
       el?.scrollIntoView({ behavior: 'smooth' });
     } else {
       navigate(url);
-    }
-  };
-
-  const handleMobileSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (mobileSearchQuery.trim()) {
-      setMenuOpen(false);
-      navigate(`/blog?search=${encodeURIComponent(mobileSearchQuery.trim())}`);
-      setMobileSearchQuery('');
-    } else {
-      setIsSearchOpen(true);
     }
   };
 
@@ -218,190 +171,6 @@ export const Header: React.FC<HeaderProps> = ({
           })}
         </nav>
       </div>
-
-      {/* LUXURY MOBILE SLIDE-OVER DRAWER WITH BACKDROP */}
-      {isMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 flex">
-          {/* Backdrop Blur Overlay */}
-          <div 
-            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
-            onClick={() => setMenuOpen(false)}
-            aria-hidden="true"
-          />
-
-          {/* Drawer Content Panel */}
-          <div className="relative w-full max-w-xs sm:max-w-sm bg-[#F7F4EE] h-full shadow-2xl flex flex-col justify-between overflow-y-auto border-r border-[#E5DED2] z-10 animate-in slide-in-from-left duration-300">
-            
-            {/* Drawer Header */}
-            <div>
-              <div className="p-4 sm:p-5 border-b border-[#E5DED2] flex items-center justify-between bg-white/50">
-                <div>
-                  <span className="font-serif text-lg font-bold tracking-wider text-[#242522] block">
-                    {siteSettings.logoText || 'THE DECOR DIARY'}
-                  </span>
-                  <span className="text-[8px] uppercase tracking-widest text-[#A68B6A] font-bold block">
-                    Navigation & Discovery
-                  </span>
-                </div>
-                <button
-                  onClick={() => setMenuOpen(false)}
-                  className="p-2 rounded-full hover:bg-[#EFEAE1] text-[#242522] transition-colors cursor-pointer border border-[#E5DED2]"
-                  aria-label="Close menu"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Drawer Quick Search Bar */}
-              <div className="p-4 border-b border-[#E5DED2] bg-white">
-                <form onSubmit={handleMobileSearchSubmit} className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search journal guides, rooms..."
-                    value={mobileSearchQuery}
-                    onChange={(e) => setMobileSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-9 py-2.5 rounded-xl bg-[#F7F4EE] border border-[#E5DED2] text-xs text-[#242522] placeholder-[#7A7369] focus:outline-none focus:border-[#2F3A32]"
-                  />
-                  <Search className="w-4 h-4 text-[#7A7369] absolute left-3 top-1/2 -translate-y-1/2" />
-                  {mobileSearchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setMobileSearchQuery('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7A7369] hover:text-[#242522]"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  )}
-                </form>
-              </div>
-
-              {/* Quick Feature Buttons */}
-              <div className="p-4 grid grid-cols-2 gap-2 border-b border-[#E5DED2]">
-                <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    const el = document.getElementById('trending-topics');
-                    if (el) {
-                      el.scrollIntoView({ behavior: 'smooth' });
-                    } else {
-                      navigate('/#trending-topics');
-                    }
-                  }}
-                  className="p-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-left transition-colors flex items-center gap-2 cursor-pointer"
-                >
-                  <Flame className="w-4 h-4 text-amber-600 fill-amber-500 shrink-0" />
-                  <div>
-                    <span className="text-xs font-bold text-amber-950 block">Tag Slider</span>
-                    <span className="text-[9px] text-amber-800">33+ Topics</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    onOpenSavedDrawer();
-                  }}
-                  className="p-2.5 rounded-xl bg-white hover:bg-[#EFEAE1] border border-[#E5DED2] text-left transition-colors flex items-center gap-2 cursor-pointer"
-                >
-                  <Bookmark className="w-4 h-4 text-[#2F3A32] shrink-0" />
-                  <div>
-                    <span className="text-xs font-bold text-[#242522] block">Saved Pins</span>
-                    <span className="text-[9px] text-[#7A7369]">{savedPostIds.length} saved</span>
-                  </div>
-                </button>
-              </div>
-
-              {/* Main Navigation Links */}
-              <div className="p-4 space-y-1">
-                <span className="text-[10px] uppercase font-bold tracking-widest text-[#7A7369] px-2 block mb-2">
-                  Primary Pages
-                </span>
-                {activeNavItems.map((item) => {
-                  const isActive = currentPath === item.url;
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => handleNavClick(item.url)}
-                      className={`w-full flex items-center justify-between py-2.5 px-3 rounded-xl text-xs font-semibold transition-colors text-left cursor-pointer ${
-                        isActive
-                          ? 'bg-[#2F3A32] text-white'
-                          : 'text-[#33302E] hover:bg-white'
-                      }`}
-                    >
-                      <span>{item.label}</span>
-                      <ChevronRight className={`w-3.5 h-3.5 ${isActive ? 'text-[#C8A97E]' : 'text-[#A89F95]'}`} />
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Room Categories Matrix */}
-              <div className="p-4 border-t border-[#E5DED2] space-y-2">
-                <span className="text-[10px] uppercase font-bold tracking-widest text-[#7A7369] px-2 block">
-                  Browse by Room & Category
-                </span>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {categories.slice(0, 6).map((cat) => {
-                    const count = publishedPosts.filter(p => p.categoryId === cat.id).length;
-                    return (
-                      <button
-                        key={cat.id}
-                        onClick={() => {
-                          setMenuOpen(false);
-                          navigate(`/category/${cat.slug}`);
-                        }}
-                        className="p-2 rounded-lg bg-white/70 hover:bg-white text-left text-xs font-medium text-[#242522] border border-[#E5DED2] transition-colors flex items-center justify-between cursor-pointer"
-                      >
-                        <span className="truncate">{cat.name}</span>
-                        <span className="text-[9px] text-[#7A7369] font-mono ml-1">{count}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* Drawer Footer: Admin Access & Copyright */}
-            <div className="p-4 border-t border-[#E5DED2] bg-white/50 space-y-3 pb-8">
-              {isAdminAuthenticated ? (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-[#242522]">Logged in as {currentUser?.name}</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold uppercase">
-                      {currentUser?.role}
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setMenuOpen(false);
-                      navigate('/admin');
-                    }}
-                    className="w-full py-2.5 px-3 rounded-xl bg-[#2F3A32] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer"
-                  >
-                    <LayoutDashboard className="w-3.5 h-3.5 text-[#C8A97E]" />
-                    <span>Open Admin CMS Dashboard</span>
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => {
-                    setMenuOpen(false);
-                    navigate('/admin/login');
-                  }}
-                  className="w-full py-2 text-center text-xs text-[#7A7369] hover:text-[#242522] transition-colors"
-                >
-                  Editor & Author Portal &rarr;
-                </button>
-              )}
-
-              <p className="text-[10px] text-center text-[#A89F95]">
-                &copy; {new Date().getFullYear()} {siteSettings.siteName || siteSettings.logoText || 'The Decor Diary'}. All rights reserved.
-              </p>
-            </div>
-
-          </div>
-        </div>
-      )}
     </header>
   );
 };

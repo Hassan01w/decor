@@ -38,13 +38,43 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({ slug }) =>
     navigate, 
     savedPostIds, 
     toggleSavePost, 
-    incrementViews 
+    incrementViews,
+    isAdminAuthenticated 
   } = useBlog();
   const [scrollProgress, setScrollProgress] = useState(0);
   const [readingPace, setReadingPace] = useState<200 | 160 | 250>(200);
   const [showPaceDropdown, setShowPaceDropdown] = useState(false);
 
-  const post = posts.find(p => p.slug === slug || p.id === slug);
+  // Sanitize and decode requested slug
+  const cleanSlug = useMemo(() => {
+    try {
+      return decodeURIComponent(slug || '').trim().replace(/\/+$/, '');
+    } catch {
+      return (slug || '').trim().replace(/\/+$/, '');
+    }
+  }, [slug]);
+
+  // Find post by slug or id (case-insensitive fallback)
+  const post = useMemo(() => {
+    if (!cleanSlug) return undefined;
+    const lower = cleanSlug.toLowerCase();
+    return posts.find(p => 
+      p.slug === cleanSlug || 
+      p.id === cleanSlug || 
+      p.slug?.toLowerCase() === lower || 
+      p.id?.toLowerCase() === lower
+    );
+  }, [posts, cleanSlug]);
+
+  // Safe fallback author profile
+  const author = useMemo(() => {
+    return {
+      name: post?.author?.name || 'The Decor Diary Editorial Team',
+      role: post?.author?.role || 'Senior Interior Stylist & Curator',
+      avatar: post?.author?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+      bio: post?.author?.bio || 'Curating mindful home decor, warm minimalism, and timeless interior aesthetics for modern living spaces.'
+    };
+  }, [post?.author]);
 
   // Dynamically calculate accurate word count and reading time from article content
   const readingStats = useMemo(() => {
@@ -106,13 +136,23 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({ slug }) =>
       <div className="max-w-4xl mx-auto px-4 py-24 text-center space-y-6">
         <h1 className="font-serif text-3xl font-bold text-[#242522]">Article Not Found</h1>
         <p className="text-sm text-[#5A534B]">The article you are searching for does not exist, is in draft mode, or has been archived.</p>
-        <button
-          onClick={() => navigate('/blog')}
-          className="px-6 py-3 bg-[#2F3A32] text-white rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 cursor-pointer hover:bg-[#A68B6A] transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Browse All Articles</span>
-        </button>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <button
+            onClick={() => navigate('/blog')}
+            className="px-6 py-3 bg-[#2F3A32] text-white rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 cursor-pointer hover:bg-[#A68B6A] transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Browse All Articles</span>
+          </button>
+          {isAdminAuthenticated && (
+            <button
+              onClick={() => navigate('/admin/posts')}
+              className="px-6 py-3 bg-white text-[#242522] border border-[#D9CFC4] rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 cursor-pointer hover:bg-[#EFEAE1] transition-colors"
+            >
+              <span>Go to Admin Articles</span>
+            </button>
+          )}
+        </div>
       </div>
     );
   }
@@ -121,7 +161,13 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({ slug }) =>
   const isSaved = savedPostIds.includes(post.id);
 
   // JSON-LD structured data for Google SEO
-  const jsonLd = generateArticleJsonLd(post, siteSettings, window.location.href);
+  const jsonLd = (() => {
+    try {
+      return generateArticleJsonLd(post, siteSettings, window.location.href);
+    } catch {
+      return null;
+    }
+  })();
 
   // Related articles (same category or popular)
   const relatedPosts = publishedPosts
@@ -133,23 +179,47 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({ slug }) =>
   const prevPost = currentIndex > 0 ? publishedPosts[currentIndex - 1] : null;
   const nextPost = currentIndex >= 0 && currentIndex < publishedPosts.length - 1 ? publishedPosts[currentIndex + 1] : null;
 
-  const formattedPublishedDate = new Date(post.publishedAt).toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric'
-  });
+  const formattedPublishedDate = (() => {
+    if (!post.publishedAt) return 'Recently Published';
+    try {
+      const d = new Date(post.publishedAt);
+      if (isNaN(d.getTime())) return 'Recently Published';
+      return d.toLocaleDateString('en-US', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    } catch {
+      return 'Recently Published';
+    }
+  })();
 
-  const formattedUpdatedDate = post.updatedAt ? new Date(post.updatedAt).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  }) : null;
+  const formattedUpdatedDate = (() => {
+    if (!post.updatedAt) return null;
+    try {
+      const d = new Date(post.updatedAt);
+      if (isNaN(d.getTime())) return null;
+      return d.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      });
+    } catch {
+      return null;
+    }
+  })();
 
-  const pinUrl = getPinterestShareUrl(
-    window.location.href,
-    post.featuredImage,
-    `${post.title} — ${post.excerpt}`
-  );
+  const pinUrl = (() => {
+    try {
+      return getPinterestShareUrl(
+        window.location.href,
+        post.featuredImage || '',
+        `${post.title || ''} — ${post.excerpt || ''}`
+      );
+    } catch {
+      return '#';
+    }
+  })();
 
   // Remaining time estimate based on scroll progress
   const remainingMinutes = Math.max(1, Math.ceil((readingStats.minutes * (100 - scrollProgress)) / 100));
@@ -254,21 +324,21 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({ slug }) =>
             {/* Left: Author Profile */}
             <div className="flex items-center gap-3.5">
               <img
-                src={post.author.avatar}
-                alt={post.author.name}
+                src={author.avatar}
+                alt={author.name}
                 className="w-12 h-12 rounded-full object-cover ring-2 ring-[#F7F4EE] shadow-xs shrink-0"
               />
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-serif text-base font-bold text-[#242522] block">
-                    {post.author.name}
+                    {author.name}
                   </span>
                   <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-[#F7F4EE] text-[#2F3A32] border border-[#E5DED2]">
                     Author
                   </span>
                 </div>
                 <span className="text-xs text-[#7A7369] block mt-0.5">
-                  {post.author.role}
+                  {author.role}
                 </span>
               </div>
             </div>
@@ -452,21 +522,21 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({ slug }) =>
         {/* Author Bio Box */}
         <div className="p-6 sm:p-8 bg-white rounded-3xl border border-[#E5DED2] flex flex-col sm:flex-row items-center sm:items-start gap-6 shadow-xs my-10">
           <img
-            src={post.author.avatar}
-            alt={post.author.name}
+            src={author.avatar}
+            alt={author.name}
             className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover ring-4 ring-[#F7F4EE] shrink-0"
           />
           <div className="space-y-2 text-center sm:text-left">
             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
               <h4 className="font-serif text-lg font-bold text-[#242522]">
-                About {post.author.name}
+                About {author.name}
               </h4>
               <span className="text-xs text-[#A68B6A] font-semibold">
-                {post.author.role}
+                {author.role}
               </span>
             </div>
             <p className="text-xs sm:text-sm text-[#5A534B] leading-relaxed">
-              {post.author.bio}
+              {author.bio}
             </p>
           </div>
         </div>

@@ -22,7 +22,12 @@ export const AdminSyncBanner: React.FC = () => {
     logoutAdmin 
   } = useBlog();
 
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 1024;
+    }
+    return false;
+  });
   const [isSyncing, setIsSyncing] = useState(false);
 
   if (!isAdminAuthenticated) return null;
@@ -34,7 +39,7 @@ export const AdminSyncBanner: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-20 lg:bottom-4 left-4 z-50 transition-all duration-300">
+    <div className="fixed bottom-22 lg:bottom-4 left-3 lg:left-4 z-40 transition-all duration-300 max-w-[calc(100vw-24px)]">
       {isMinimized ? (
         <button
           onClick={() => setIsMinimized(false)}

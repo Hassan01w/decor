@@ -246,3 +246,24 @@ export interface Comment {
   createdAt: string;
   approved: boolean;
 }
+
+export interface ActivityLog {
+  id: string;
+  timestamp: string;
+  action: string;
+  details: string;
+  user: string;
+  type: 'post' | 'category' | 'settings' | 'sync' | 'media' | 'comment' | 'user' | 'system';
+}
+
+export interface SyncDiagnosticInfo {
+  isConnected: boolean;
+  channelName: string;
+  lastSyncTimestamp: number;
+  totalPosts: number;
+  totalCategories: number;
+  totalMedia: number;
+  totalSubscribers: number;
+  totalComments: number;
+  storageQuotaUsedKb: number;
+}

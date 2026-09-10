@@ -31,6 +31,8 @@ export const AdminPostsList: React.FC = () => {
     savePost, 
     deletePost, 
     duplicatePost, 
+    bulkUpdatePosts,
+    bulkDeletePosts,
     showToast,
     exportDatabase,
     importDatabase,
@@ -44,6 +46,8 @@ export const AdminPostsList: React.FC = () => {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [scheduleModalPost, setScheduleModalPost] = useState<any | null>(null);
   const [quickScheduledAt, setQuickScheduledAt] = useState<string>('');
+  const [selectedPostIds, setSelectedPostIds] = useState<string[]>([]);
+  const [bulkCategoryChoice, setBulkCategoryChoice] = useState<string>('');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const blogFileInputRef = useRef<HTMLInputElement>(null);
@@ -240,6 +244,47 @@ export const AdminPostsList: React.FC = () => {
     setDeleteConfirmId(null);
   };
 
+  const toggleSelectAll = () => {
+    if (selectedPostIds.length === filteredPosts.length) {
+      setSelectedPostIds([]);
+    } else {
+      setSelectedPostIds(filteredPosts.map(p => p.id));
+    }
+  };
+
+  const toggleSelectPost = (id: string) => {
+    setSelectedPostIds(prev => 
+      prev.includes(id) ? prev.filter(pId => pId !== id) : [...prev, id]
+    );
+  };
+
+  const handleBulkStatus = (status: 'published' | 'draft') => {
+    if (selectedPostIds.length === 0) return;
+    bulkUpdatePosts(selectedPostIds, { status });
+    setSelectedPostIds([]);
+  };
+
+  const handleBulkFeature = (isFeatured: boolean) => {
+    if (selectedPostIds.length === 0) return;
+    bulkUpdatePosts(selectedPostIds, { isFeatured });
+    setSelectedPostIds([]);
+  };
+
+  const handleBulkCategory = (categoryId: string) => {
+    if (selectedPostIds.length === 0 || !categoryId) return;
+    bulkUpdatePosts(selectedPostIds, { categoryId });
+    setSelectedPostIds([]);
+    setBulkCategoryChoice('');
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedPostIds.length === 0) return;
+    if (window.confirm(`Are you sure you want to permanently delete ${selectedPostIds.length} selected articles?`)) {
+      bulkDeletePosts(selectedPostIds);
+      setSelectedPostIds([]);
+    }
+  };
+
   const scheduledCount = posts.filter(p => p.status === 'scheduled').length;
   const myPostsCount = posts.filter(p => canEditPost(currentUser, p)).length;
 
@@ -407,6 +452,15 @@ export const AdminPostsList: React.FC = () => {
             <table className="w-full text-left border-collapse text-xs sm:text-sm">
               <thead>
                 <tr className="bg-[#FAF8F5] border-b border-[#E8DFD5] text-[11px] font-bold uppercase tracking-wider text-[#8A7E73]">
+                  <th className="py-3.5 px-3 w-10 text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedPostIds.length === filteredPosts.length && filteredPosts.length > 0}
+                      onChange={toggleSelectAll}
+                      className="w-4 h-4 rounded text-[#8C6D53] focus:ring-[#8C6D53] cursor-pointer"
+                      title="Select all filtered articles"
+                    />
+                  </th>
                   <th className="py-3.5 px-4 sm:px-6">Article</th>
                   <th className="py-3.5 px-4">Author</th>
                   <th className="py-3.5 px-4">Category</th>
@@ -423,9 +477,25 @@ export const AdminPostsList: React.FC = () => {
                   const canDelete = canDeletePost(currentUser, post);
                   const isScheduled = post.status === 'scheduled';
                   const scheduledDate = post.scheduledAt ? new Date(post.scheduledAt) : null;
+                  const isSelected = selectedPostIds.includes(post.id);
 
                   return (
-                    <tr key={post.id} className="hover:bg-[#FAF8F5]/80 transition-colors">
+                    <tr 
+                      key={post.id} 
+                      className={`hover:bg-[#FAF8F5]/80 transition-colors ${
+                        isSelected ? 'bg-[#F7F2EB]' : ''
+                      }`}
+                    >
+                      {/* Selection Checkbox */}
+                      <td className="py-4 px-3 text-center">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => toggleSelectPost(post.id)}
+                          className="w-4 h-4 rounded text-[#8C6D53] focus:ring-[#8C6D53] cursor-pointer"
+                        />
+                      </td>
+
                       {/* Title & Image */}
                       <td className="py-4 px-4 sm:px-6">
                         <div className="flex items-center gap-3 min-w-[240px]">
@@ -686,6 +756,73 @@ export const AdminPostsList: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Floating Bulk Actions Toolbar */}
+      {selectedPostIds.length > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-[#1A1816] text-white px-5 py-3.5 rounded-2xl shadow-2xl border border-[#38332E] flex flex-wrap items-center justify-between gap-4 max-w-3xl w-[92%] animate-in slide-in-from-bottom-5 duration-200">
+          <div className="flex items-center gap-2.5">
+            <span className="w-6 h-6 rounded-full bg-[#8C6D53] text-white font-bold text-xs flex items-center justify-center">
+              {selectedPostIds.length}
+            </span>
+            <span className="text-xs font-semibold text-[#D9CFC4]">
+              {selectedPostIds.length === 1 ? '1 article selected' : `${selectedPostIds.length} articles selected`}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => handleBulkStatus('published')}
+              className="px-3 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+            >
+              <Check className="w-3.5 h-3.5" />
+              <span>Publish All</span>
+            </button>
+
+            <button
+              onClick={() => handleBulkStatus('draft')}
+              className="px-3 py-1.5 bg-[#2E2925] hover:bg-[#3D3732] text-[#D9CFC4] rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+            >
+              <span>Set as Draft</span>
+            </button>
+
+            <button
+              onClick={() => handleBulkFeature(true)}
+              className="px-3 py-1.5 bg-[#2E2925] hover:bg-[#3D3732] text-[#D9CFC4] rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+            >
+              <Star className="w-3.5 h-3.5 text-amber-400" />
+              <span>Feature</span>
+            </button>
+
+            {/* Bulk Category Selector */}
+            <select
+              value={bulkCategoryChoice}
+              onChange={(e) => handleBulkCategory(e.target.value)}
+              className="px-2.5 py-1.5 bg-[#2E2925] text-white text-xs rounded-xl border border-[#3E3832] focus:outline-none cursor-pointer"
+            >
+              <option value="">Move Category...</option>
+              {categories.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+
+            <button
+              onClick={handleBulkDelete}
+              className="px-3 py-1.5 bg-red-900/80 hover:bg-red-800 text-red-200 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Delete</span>
+            </button>
+
+            <button
+              onClick={() => setSelectedPostIds([])}
+              className="p-1.5 text-[#A89F95] hover:text-white rounded-lg transition-colors cursor-pointer"
+              title="Clear selection"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       {deleteConfirmId && (

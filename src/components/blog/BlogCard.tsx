@@ -108,9 +108,27 @@ export const BlogCard: React.FC<BlogCardProps> = ({
               {post.title}
             </h3>
 
-            <p className="text-xs sm:text-sm text-[#5A534B] leading-relaxed line-clamp-2 mb-3">
+            <p className="text-xs sm:text-sm text-[#5A534B] leading-relaxed line-clamp-2 mb-2.5">
               {post.excerpt}
             </p>
+
+            {/* Popular Tags */}
+            {post.tags && post.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {post.tags.slice(0, 2).map((t, idx) => (
+                  <span
+                    key={idx}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/blog?tag=${encodeURIComponent(t)}`);
+                    }}
+                    className="inline-flex items-center text-[10px] font-semibold text-[#5A534B] hover:text-[#242522] bg-[#F7F4EE] hover:bg-[#EFEAE1] px-2 py-0.5 rounded-md border border-[#E5DED2] transition-colors"
+                  >
+                    #{t}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex items-center justify-between pt-3 border-t border-[#EFEAE1]">
@@ -337,9 +355,32 @@ export const BlogCard: React.FC<BlogCardProps> = ({
             {post.title}
           </h3>
 
-          <p className="text-xs sm:text-sm text-[#5A534B] leading-relaxed line-clamp-2 mb-4">
+          <p className="text-xs sm:text-sm text-[#5A534B] leading-relaxed line-clamp-2 mb-3">
             {post.excerpt}
           </p>
+
+          {/* Popular Tags */}
+          {post.tags && post.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {post.tags.slice(0, 2).map((t, idx) => (
+                <span
+                  key={idx}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/blog?tag=${encodeURIComponent(t)}`);
+                  }}
+                  className="inline-flex items-center text-[10px] font-semibold text-[#5A534B] hover:text-[#242522] bg-[#F7F4EE] hover:bg-[#EFEAE1] px-2 py-0.5 rounded-md border border-[#E5DED2] transition-colors"
+                >
+                  #{t}
+                </span>
+              ))}
+              {post.tags.length > 2 && (
+                <span className="text-[10px] text-[#7A7369] self-center">
+                  +{post.tags.length - 2}
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-between pt-3.5 border-t border-[#EFEAE1]">

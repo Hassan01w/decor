@@ -6,9 +6,16 @@ import { Search, SlidersHorizontal, BookOpen } from 'lucide-react';
 
 export const BlogArchivePage: React.FC = () => {
   const { publishedPosts, categories } = useBlog();
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedTag, setSelectedTag] = useState<string>('all');
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  
+  // Read initial query params from URL search string
+  const queryParams = useMemo(() => new URLSearchParams(window.location.search), []);
+  const initialCategory = queryParams.get('category') || 'all';
+  const initialTag = queryParams.get('tag') || 'all';
+  const initialQuery = queryParams.get('q') || '';
+
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
+  const [selectedTag, setSelectedTag] = useState<string>(initialTag);
+  const [searchTerm, setSearchTerm] = useState<string>(initialQuery);
   const [sortBy, setSortBy] = useState<'latest' | 'popular' | 'views'>('latest');
   const [visibleCount, setVisibleCount] = useState<number>(9);
 

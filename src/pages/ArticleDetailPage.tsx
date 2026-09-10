@@ -430,7 +430,7 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({ slug }) =>
             {post.tags.map(tag => (
               <button
                 key={tag}
-                onClick={() => navigate('/blog')}
+                onClick={() => navigate(`/blog?tag=${encodeURIComponent(tag)}`)}
                 className="px-3.5 py-1.5 bg-white hover:bg-[#2F3A32] hover:text-white border border-[#E5DED2] rounded-full text-xs font-semibold text-[#242522] transition-colors cursor-pointer shadow-2xs"
               >
                 #{tag}

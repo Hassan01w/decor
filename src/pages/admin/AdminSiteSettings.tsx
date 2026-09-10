@@ -399,21 +399,45 @@ export const AdminSiteSettings: React.FC = () => {
                 className="w-full px-3.5 py-2.5 bg-[#F7F4EE] border border-[#E5DED2] rounded-xl text-xs font-mono text-[#242522]"
               />
             </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-[#242522] mb-1">
+                Google AdSense Publisher ID
+              </label>
+              <input
+                type="text"
+                value={settings.googleAdsenseId || 'ca-pub-2818671808304288'}
+                onChange={(e) => setSettings({ ...settings, googleAdsenseId: e.target.value })}
+                placeholder="ca-pub-XXXXXXXXXXXXXXXX"
+                className="w-full px-3.5 py-2.5 bg-[#F7F4EE] border border-[#E5DED2] rounded-xl text-xs font-mono text-[#242522]"
+              />
+            </div>
           </div>
 
           <div className="p-5 bg-[#F7F4EE] rounded-2xl border border-[#E5DED2] space-y-3 text-xs text-[#5A534B]">
             <div className="flex items-center justify-between">
               <h5 className="font-serif font-bold text-[#242522] flex items-center gap-2">
                 <Check className="w-4 h-4 text-emerald-700" />
-                <span>Google AdSense Verification</span>
+                <span>Google AdSense & ads.txt Status</span>
               </h5>
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono text-[10px] font-bold">
-                CLIENT CONFIGURED
+                TAG & META ACTIVE
               </span>
             </div>
             <p>
-              AdSense integration script is active in site head with Client ID: <code className="font-mono bg-white px-2 py-0.5 rounded border border-[#E5DED2] text-[#242522] font-bold">ca-pub-2818671808304288</code>. All visitor-facing ad keywords are cleaned to maintain editorial aesthetics.
+              AdSense integration script & account meta tag are active with Publisher Client ID:{' '}
+              <code className="font-mono bg-white px-2 py-0.5 rounded border border-[#E5DED2] text-[#242522] font-bold">
+                {settings.googleAdsenseId || 'ca-pub-2818671808304288'}
+              </code>.
             </p>
+            <div className="p-3 bg-white rounded-xl border border-[#E5DED2] space-y-1.5 text-[11px]">
+              <p className="font-bold text-[#242522]">Why AdSense shows "Unauthorized" (403 / Pending):</p>
+              <ol className="list-decimal list-inside space-y-1 text-[#7A7369]">
+                <li><strong>Domain Authorization:</strong> In your Google AdSense console, you must add your custom domain (<code>thedecordiary.store</code>) under <em>Sites &rarr; Add site</em>. Dev/staging URLs (like <code>*.run.app</code>) are blocked by Google for security.</li>
+                <li><strong>Site Verification:</strong> We have embedded the required <code>&lt;meta name="google-adsense-account"&gt;</code> in <code>&lt;head&gt;</code> and <code>/ads.txt</code> at root.</li>
+                <li><strong>Account Approval:</strong> Google reviews new sites before ads render. Once AdSense marks your site as "Ready", ads will display automatically.</li>
+              </ol>
+            </div>
           </div>
 
           <div className="p-4 bg-[#F7F4EE] rounded-2xl border border-[#E5DED2] space-y-2 text-xs text-[#5A534B]">

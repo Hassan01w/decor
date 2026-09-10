@@ -22,7 +22,12 @@ import {
   MapPin,
   Search,
   CheckCircle2,
-  Calendar
+  Calendar,
+  MessageSquare,
+  Radio,
+  Activity,
+  Zap,
+  RefreshCw
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
@@ -30,6 +35,9 @@ export const AdminDashboard: React.FC = () => {
     posts, 
     categories, 
     subscribers, 
+    comments,
+    activityLogs,
+    syncNow,
     navigate, 
     savePost, 
     exportDatabase, 
@@ -38,6 +46,7 @@ export const AdminDashboard: React.FC = () => {
   } = useBlog();
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const totalPosts = posts.length;
   const publishedPosts = posts.filter(p => p.status === 'published');
@@ -45,6 +54,7 @@ export const AdminDashboard: React.FC = () => {
   const draftPosts = posts.filter(p => p.status === 'draft');
   const totalViews = posts.reduce((sum, p) => sum + (p.viewsCount || 0), 0);
   const totalSaves = posts.reduce((sum, p) => sum + (p.savesCount || 0), 0);
+  const pendingComments = comments.filter(c => !c.approved);
 
   // Filtered recent posts
   const filteredRecentPosts = [...posts]
@@ -199,6 +209,102 @@ export const AdminDashboard: React.FC = () => {
             </div>
           );
         })}
+      </div>
+
+      {/* Live Sync & Reader Engagement Banner */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Real-time sync bridge */}
+        <div className="p-5 rounded-2xl bg-white border border-[#E8DFD5] shadow-xs flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-200 shrink-0">
+              <Radio className="w-5 h-5 animate-pulse" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="font-serif text-sm font-bold text-[#2D2A26]">Real-Time Store Sync</h4>
+                <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">ACTIVE</span>
+              </div>
+              <p className="text-xs text-[#8A7E73]">Live BroadcastChannel bridges admin updates with visitor storefronts.</p>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              setIsSyncing(true);
+              syncNow();
+              setTimeout(() => {
+                setIsSyncing(false);
+                showToast('Storefront view synchronized!', 'success');
+              }, 400);
+            }}
+            disabled={isSyncing}
+            className="px-3.5 py-2 bg-[#8C6D53] hover:bg-[#735841] text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0 disabled:opacity-50 shadow-2xs"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+            <span>{isSyncing ? 'Syncing...' : 'Sync Now'}</span>
+          </button>
+        </div>
+
+        {/* Reader Comments Alert */}
+        <div 
+          onClick={() => navigate('/admin/comments')}
+          className="p-5 rounded-2xl bg-white border border-[#E8DFD5] shadow-xs flex items-center justify-between gap-4 cursor-pointer hover:border-[#8C6D53] transition-all group"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center border border-amber-200 shrink-0">
+              <MessageSquare className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="font-serif text-sm font-bold text-[#2D2A26] group-hover:text-[#8C6D53]">
+                  Reader Feedback & Reviews
+                </h4>
+                {pendingComments.length > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold">
+                    {pendingComments.length} Pending
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-[#8A7E73]">
+                {comments.length} total comments across articles. {pendingComments.length > 0 ? 'Requires review.' : 'All moderated.'}
+              </p>
+            </div>
+          </div>
+          <ArrowUpRight className="w-4 h-4 text-[#A89F95] group-hover:text-[#8C6D53]" />
+        </div>
+      </div>
+
+      {/* Curated Editorial Idea Starters */}
+      <div className="p-5 rounded-2xl bg-[#FAF8F5] border border-[#E8DFD5] space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#8C6D53]" />
+            <h4 className="font-serif text-xs font-bold uppercase tracking-wider text-[#8C6D53]">
+              Trending Decor Editorial Starters
+            </h4>
+          </div>
+          <span className="text-[11px] text-[#8A7E73]">1-click to start writing</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+          {[
+            { title: 'The 2026 Limewash Wall Texture Guide', cat: 'Living Room' },
+            { title: 'Honed Travertine Coffee Tables: Care & Styling', cat: 'Furniture' },
+            { title: 'Japandi Living Room Styling Masterclass', cat: 'Minimalist' },
+            { title: 'Bouclé Accent Chairs: What to Look For', cat: 'Living Room' },
+          ].map((idea, i) => (
+            <button
+              key={i}
+              onClick={() => navigate('/admin/posts/new')}
+              className="p-3 bg-white rounded-xl border border-[#E8DFD5] hover:border-[#8C6D53] text-left transition-all hover:shadow-2xs cursor-pointer group"
+            >
+              <span className="text-[10px] text-[#8C6D53] font-semibold uppercase block">
+                {idea.cat}
+              </span>
+              <p className="text-xs font-bold text-[#2D2A26] group-hover:text-[#8C6D53] truncate mt-0.5">
+                {idea.title}
+              </p>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Scheduled Releases Spotlight (if any posts are scheduled) */}
@@ -502,6 +608,36 @@ export const AdminDashboard: React.FC = () => {
                   <CheckCircle2 className="w-3 h-3" /> Enabled
                 </span>
               </div>
+            </div>
+          </div>
+
+          {/* System & Editorial Activity Stream */}
+          <div className="bg-white rounded-2xl border border-[#E8DFD5] p-5 shadow-xs space-y-3.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#8C6D53]">
+                <Activity className="w-4 h-4 text-[#8C6D53]" />
+                <span>Live Audit Activity</span>
+              </div>
+              <span className="text-[10px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">
+                Synced
+              </span>
+            </div>
+
+            <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+              {activityLogs && activityLogs.length > 0 ? (
+                activityLogs.slice(0, 6).map(log => (
+                  <div key={log.id} className="text-xs border-l-2 border-[#8C6D53] pl-2.5 py-1">
+                    <p className="font-semibold text-[#2D2A26] line-clamp-1">{log.details}</p>
+                    <div className="flex items-center gap-2 text-[10px] text-[#8A7E73] mt-0.5">
+                      <span className="font-medium text-[#8C6D53]">{log.user || 'Admin'}</span>
+                      <span>•</span>
+                      <span>{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-[#8A7E73] py-2 italic">No recent logged actions.</p>
+              )}
             </div>
           </div>
         </div>

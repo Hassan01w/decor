@@ -6,6 +6,8 @@ import { SearchModal } from './components/common/SearchModal';
 import { SavedPostsDrawer } from './components/common/SavedPostsDrawer';
 import { ToastContainer } from './components/common/ToastContainer';
 import { CookieConsentBanner } from './components/common/CookieConsentBanner';
+import { AdminSyncBanner } from './components/common/AdminSyncBanner';
+import { MobileBottomNav } from './components/common/MobileBottomNav';
 
 // Public Pages (Lazy Loaded)
 const HomePage = lazy(() => import('./pages/HomePage').then(module => ({ default: module.HomePage })));
@@ -31,6 +33,7 @@ const AdminMediaLibrary = lazy(() => import('./pages/admin/AdminMediaLibrary').t
 const AdminSubscribers = lazy(() => import('./pages/admin/AdminSubscribers').then(module => ({ default: module.AdminSubscribers })));
 const AdminSiteSettings = lazy(() => import('./pages/admin/AdminSiteSettings').then(module => ({ default: module.AdminSiteSettings })));
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers').then(module => ({ default: module.AdminUsers })));
+const AdminComments = lazy(() => import('./pages/admin/AdminComments').then(module => ({ default: module.AdminComments })));
 
 // Permissions
 import { 
@@ -82,6 +85,7 @@ function RestrictedPage({ requiredRole = 'Administrator' }: { requiredRole?: str
 export function App() {
   const { currentPath, isAdminAuthenticated, currentUser, navigate } = useBlog();
   const [isSavedDrawerOpen, setIsSavedDrawerOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Scroll to top whenever path changes
@@ -109,57 +113,63 @@ export function App() {
   // Route Dispatcher
   const renderContent = () => {
     // 1. ADMIN ROUTES
-    if (currentPath.startsWith('/admin')) {
-      if (currentPath === '/admin/login' || !isAdminAuthenticated) {
+    const baseRoute = currentPath.split('?')[0].split('#')[0] || '/';
+
+    if (baseRoute.startsWith('/admin')) {
+      if (baseRoute === '/admin/login' || !isAdminAuthenticated) {
         return <AdminLogin />;
       }
 
       // Determine active tab for AdminLayout
       let activeTab = 'dashboard';
-      if (currentPath.startsWith('/admin/posts')) activeTab = 'posts';
-      else if (currentPath.startsWith('/admin/categories')) activeTab = 'categories';
-      else if (currentPath.startsWith('/admin/homepage')) activeTab = 'homepage';
-      else if (currentPath.startsWith('/admin/navigation')) activeTab = 'navigation';
-      else if (currentPath.startsWith('/admin/media')) activeTab = 'media';
-      else if (currentPath.startsWith('/admin/subscribers')) activeTab = 'subscribers';
-      else if (currentPath.startsWith('/admin/users')) activeTab = 'users';
-      else if (currentPath.startsWith('/admin/settings')) activeTab = 'settings';
+      if (baseRoute.startsWith('/admin/posts')) activeTab = 'posts';
+      else if (baseRoute.startsWith('/admin/categories')) activeTab = 'categories';
+      else if (baseRoute.startsWith('/admin/comments')) activeTab = 'comments';
+      else if (baseRoute.startsWith('/admin/homepage')) activeTab = 'homepage';
+      else if (baseRoute.startsWith('/admin/navigation')) activeTab = 'navigation';
+      else if (baseRoute.startsWith('/admin/media')) activeTab = 'media';
+      else if (baseRoute.startsWith('/admin/subscribers')) activeTab = 'subscribers';
+      else if (baseRoute.startsWith('/admin/users')) activeTab = 'users';
+      else if (baseRoute.startsWith('/admin/settings')) activeTab = 'settings';
 
       return (
         <AdminLayout activeTab={activeTab}>
           {(() => {
-            if (currentPath === '/admin' || currentPath === '/admin/dashboard') {
+            if (baseRoute === '/admin' || baseRoute === '/admin/dashboard') {
               return <AdminDashboard />;
             }
-            if (currentPath === '/admin/posts/new') {
+            if (baseRoute === '/admin/posts/new') {
               return <AdminPostEditor />;
             }
-            if (currentPath.startsWith('/admin/posts/edit/')) {
-              const postId = currentPath.replace('/admin/posts/edit/', '');
+            if (baseRoute.startsWith('/admin/posts/edit/')) {
+              const postId = baseRoute.replace('/admin/posts/edit/', '');
               return <AdminPostEditor postId={postId} />;
             }
-            if (currentPath === '/admin/posts') {
+            if (baseRoute === '/admin/posts') {
               return <AdminPostsList />;
             }
-            if (currentPath === '/admin/categories') {
+            if (baseRoute === '/admin/categories') {
               return canManageCategories(currentUser) ? <AdminCategories /> : <RestrictedPage requiredRole="Editor or Administrator" />;
             }
-            if (currentPath === '/admin/homepage') {
+            if (baseRoute === '/admin/comments') {
+              return <AdminComments />;
+            }
+            if (baseRoute === '/admin/homepage') {
               return canManageHomepage(currentUser) ? <AdminHomepageCMS /> : <RestrictedPage requiredRole="Administrator" />;
             }
-            if (currentPath === '/admin/navigation') {
+            if (baseRoute === '/admin/navigation') {
               return canManageNavigation(currentUser) ? <AdminNavigation /> : <RestrictedPage requiredRole="Administrator" />;
             }
-            if (currentPath === '/admin/media') {
+            if (baseRoute === '/admin/media') {
               return <AdminMediaLibrary />;
             }
-            if (currentPath === '/admin/subscribers') {
+            if (baseRoute === '/admin/subscribers') {
               return canManageSubscribers(currentUser) ? <AdminSubscribers /> : <RestrictedPage requiredRole="Editor or Administrator" />;
             }
-            if (currentPath === '/admin/users') {
+            if (baseRoute === '/admin/users') {
               return canManageUsers(currentUser) ? <AdminUsers /> : <RestrictedPage requiredRole="Administrator" />;
             }
-            if (currentPath === '/admin/settings') {
+            if (baseRoute === '/admin/settings') {
               return canManageSettings(currentUser) ? <AdminSiteSettings /> : <RestrictedPage requiredRole="Administrator" />;
             }
             return <AdminDashboard />;
@@ -171,25 +181,31 @@ export function App() {
     // 2. PUBLIC ROUTES
     let pageComponent = <HomePage />;
 
-    if (currentPath === '/' || currentPath === '') {
+    if (baseRoute === '/' || baseRoute === '') {
       pageComponent = <HomePage />;
-    } else if (currentPath === '/blog') {
+    } else if (baseRoute === '/blog') {
       pageComponent = <BlogArchivePage />;
-    } else if (currentPath === '/about') {
+    } else if (baseRoute === '/about') {
       pageComponent = <AboutPage />;
-    } else if (currentPath === '/privacy') {
+    } else if (baseRoute === '/privacy') {
       pageComponent = <PrivacyPage />;
-    } else if (currentPath === '/terms') {
+    } else if (baseRoute === '/terms') {
       pageComponent = <TermsPage />;
-    } else if (currentPath === '/disclaimer') {
+    } else if (baseRoute === '/disclaimer') {
       pageComponent = <DisclaimerPage />;
-    } else if (currentPath === '/contact') {
+    } else if (baseRoute === '/contact') {
       pageComponent = <ContactPage />;
-    } else if (currentPath.startsWith('/blog/')) {
-      const slug = currentPath.replace('/blog/', '');
+    } else if (baseRoute.startsWith('/blog/')) {
+      const slug = baseRoute.replace('/blog/', '');
       pageComponent = <ArticleDetailPage slug={slug} />;
-    } else if (currentPath.startsWith('/category/')) {
-      const slug = currentPath.replace('/category/', '');
+    } else if (baseRoute.startsWith('/post/')) {
+      const slug = baseRoute.replace('/post/', '');
+      pageComponent = <ArticleDetailPage slug={slug} />;
+    } else if (baseRoute.startsWith('/article/')) {
+      const slug = baseRoute.replace('/article/', '');
+      pageComponent = <ArticleDetailPage slug={slug} />;
+    } else if (baseRoute.startsWith('/category/')) {
+      const slug = baseRoute.replace('/category/', '');
       pageComponent = <CategoryPage slug={slug} />;
     } else {
       pageComponent = <HomePage />;
@@ -197,11 +213,19 @@ export function App() {
 
     return (
       <div className="min-h-screen flex flex-col bg-[#F7F4EE] text-[#242522]">
-        <Header onOpenSavedDrawer={() => setIsSavedDrawerOpen(true)} />
-        <main className="flex-1">
+        <Header 
+          onOpenSavedDrawer={() => setIsSavedDrawerOpen(true)} 
+          isMobileMenuOpen={isMobileMenuOpen}
+          setIsMobileMenuOpen={setIsMobileMenuOpen}
+        />
+        <main className="flex-1 pb-28 lg:pb-0">
           {pageComponent}
         </main>
         <Footer />
+        <MobileBottomNav 
+          onOpenMenu={() => setIsMobileMenuOpen(true)}
+          onOpenSavedDrawer={() => setIsSavedDrawerOpen(true)}
+        />
       </div>
     );
   };
@@ -218,12 +242,13 @@ export function App() {
       />
       <ToastContainer />
       <CookieConsentBanner />
+      <AdminSyncBanner />
       
       {/* Scroll to top button */}
       {showScrollTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-6 right-6 p-3 bg-[#2F3A32] text-[#F7F4EE] rounded-full shadow-lg hover:bg-[#202722] hover:-translate-y-1 transition-all z-50 cursor-pointer"
+          className="fixed bottom-20 lg:bottom-6 right-4 sm:right-6 p-3 bg-[#2F3A32] text-[#F7F4EE] rounded-full shadow-lg hover:bg-[#202722] hover:-translate-y-1 transition-all z-40 cursor-pointer"
           aria-label="Scroll to top"
         >
           <ArrowUp className="w-5 h-5" />

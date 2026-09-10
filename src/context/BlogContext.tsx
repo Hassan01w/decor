@@ -9,7 +9,9 @@ import {
   Subscriber,
   Comment,
   AdminUser,
-  UserRole
+  UserRole,
+  ActivityLog,
+  SyncDiagnosticInfo
 } from '../types';
 import { StorageService, subscribeToStorage } from '../services/storage';
 import { INITIAL_USERS } from '../services/initialData';
@@ -32,6 +34,7 @@ interface BlogContextType {
   subscribers: Subscriber[];
   savedPostIds: string[];
   comments: Comment[];
+  activityLogs: ActivityLog[];
   
   // Admin & User Role Auth
   isAdmin: boolean;
@@ -53,6 +56,8 @@ interface BlogContextType {
   savePost: (post: BlogPost) => void;
   deletePost: (id: string) => void;
   duplicatePost: (id: string) => BlogPost | undefined;
+  bulkUpdatePosts: (ids: string[], updates: Partial<BlogPost>) => void;
+  bulkDeletePosts: (ids: string[]) => void;
   saveCategory: (category: Category) => void;
   deleteCategory: (id: string) => void;
   saveNavigation: (items: NavigationItem[]) => void;
@@ -65,11 +70,20 @@ interface BlogContextType {
   toggleSavePost: (postId: string) => boolean;
   incrementViews: (postId: string) => void;
   addComment: (comment: Omit<Comment, 'id' | 'createdAt' | 'approved'>) => void;
+  approveComment: (id: string, approved: boolean) => void;
+  deleteComment: (id: string) => void;
+  logActivity: (action: string, details: string, type?: ActivityLog['type']) => void;
+  clearActivityLogs: () => void;
   resetDatabase: () => void;
   importDatabase: (json: string) => boolean;
   exportDatabase: () => string;
   exportBlogs: () => string;
   importBlogs: (json: string, mode?: 'merge' | 'replace') => boolean;
+  getSyncDiagnosticInfo: () => SyncDiagnosticInfo;
+  purgeAndRepairDatabase: () => { repaired: number; message: string };
+  saveDraftAutoSave: (postId: string, data: any) => void;
+  getDraftAutoSave: (postId: string) => { timestamp: number; data: any } | null;
+  clearDraftAutoSave: (postId: string) => void;
   
   // Temporary Unlisted Preview Post (for Live Editor Preview)
   previewPostData: BlogPost | null;
@@ -80,6 +94,7 @@ interface BlogContextType {
   setIsSearchOpen: (open: boolean) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  syncNow: () => void;
   toasts: Toast[];
   showToast: (message: string, type?: 'success' | 'error' | 'info') => void;
   removeToast: (id: string) => void;
@@ -97,6 +112,7 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [subscribers, setSubscribers] = useState<Subscriber[]>(() => StorageService.getSubscribers());
   const [savedPostIds, setSavedPostIds] = useState<string[]>(() => StorageService.getSavedPostIds());
   const [comments, setComments] = useState<Comment[]>(() => StorageService.getComments());
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>(() => StorageService.getActivityLogs());
   const [users, setUsers] = useState<AdminUser[]>(() => StorageService.getUsers());
   const [currentUser, setCurrentUser] = useState<AdminUser | null>(() => StorageService.getCurrentUser());
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => StorageService.isAdminAuthenticated());
@@ -132,6 +148,7 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setSubscribers(StorageService.getSubscribers());
     setSavedPostIds(StorageService.getSavedPostIds());
     setComments(StorageService.getComments());
+    setActivityLogs(StorageService.getActivityLogs());
     setUsers(StorageService.getUsers());
     setCurrentUser(StorageService.getCurrentUser());
     setIsAdminAuthenticated(StorageService.isAdminAuthenticated());
@@ -141,7 +158,22 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const unsubscribe = subscribeToStorage(() => {
       reloadFromStorage();
     });
-    return unsubscribe;
+
+    const handleFocus = () => {
+      reloadFromStorage();
+    };
+    window.addEventListener('focus', handleFocus);
+
+    // Heartbeat sync every 15 seconds to ensure scheduled posts and multi-tab changes sync seamlessly
+    const interval = setInterval(() => {
+      reloadFromStorage();
+    }, 15000);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(interval);
+    };
   }, []);
 
   // Ensure any cached legacy branding in browser localStorage is immediately replaced with The Decor Diary
@@ -324,48 +356,71 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const duplicated = StorageService.duplicatePost(id);
     if (duplicated) {
       showToast('Article duplicated as draft.', 'success');
+      StorageService.logActivity('Article Duplicated', `Duplicated "${duplicated.title}"`, 'post');
     }
     return duplicated;
   };
 
+  const bulkUpdatePosts = (ids: string[], updates: Partial<BlogPost>) => {
+    StorageService.bulkUpdatePosts(ids, updates);
+    reloadFromStorage();
+    showToast(`Bulk updated ${ids.length} articles.`, 'success');
+  };
+
+  const bulkDeletePosts = (ids: string[]) => {
+    StorageService.bulkDeletePosts(ids);
+    reloadFromStorage();
+    showToast(`Deleted ${ids.length} articles.`, 'info');
+  };
+
   const saveCategory = (category: Category) => {
     StorageService.saveCategory(category);
+    StorageService.logActivity('Category Saved', `Updated category "${category.name}"`, 'category');
     showToast(`Category "${category.name}" updated.`, 'success');
   };
 
   const deleteCategory = (id: string) => {
     StorageService.deleteCategory(id);
+    StorageService.logActivity('Category Deleted', `Deleted category ID: ${id}`, 'category');
     showToast('Category deleted.', 'info');
   };
 
   const saveNavigation = (items: NavigationItem[]) => {
     StorageService.saveNavigation(items);
+    StorageService.logActivity('Navigation Updated', `Saved ${items.length} menu links`, 'settings');
     showToast('Navigation menu updated.', 'success');
   };
 
   const saveHomepageConfig = (config: HomepageConfig) => {
     StorageService.saveHomepageConfig(config);
+    StorageService.logActivity('Homepage Layout Saved', 'Updated hero & section arrangements', 'settings');
     showToast('Homepage layout and content updated.', 'success');
   };
 
   const saveSiteSettings = (settings: SiteSettings) => {
     StorageService.saveSiteSettings(settings);
+    StorageService.logActivity('Site Settings Updated', 'Saved brand, contact, and SEO config', 'settings');
     showToast('Site settings & SEO updated.', 'success');
   };
 
   const addMediaItem = (item: Omit<MediaItem, 'id' | 'createdAt'>) => {
     const created = StorageService.addMediaItem(item);
+    StorageService.logActivity('Media Uploaded', `Added asset "${item.name}"`, 'media');
     showToast('Image added to Media Library.', 'success');
     return created;
   };
 
   const deleteMediaItem = (id: string) => {
     StorageService.deleteMediaItem(id);
+    StorageService.logActivity('Media Removed', `Deleted asset ID: ${id}`, 'media');
     showToast('Image removed from library.', 'info');
   };
 
   const addSubscriber = (email: string, source = 'Homepage') => {
     const result = StorageService.addSubscriber(email, source);
+    if (result.success) {
+      StorageService.logActivity('New Subscriber', `${email} joined newsletter via ${source}`, 'system');
+    }
     showToast(result.message, result.success ? 'success' : 'error');
     return result;
   };
@@ -387,7 +442,54 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const addComment = (comment: Omit<Comment, 'id' | 'createdAt' | 'approved'>) => {
     StorageService.addComment(comment);
+    reloadFromStorage();
     showToast('Thank you! Your comment has been posted.', 'success');
+  };
+
+  const approveComment = (id: string, approved: boolean) => {
+    StorageService.approveComment(id, approved);
+    reloadFromStorage();
+    showToast(approved ? 'Comment approved and visible.' : 'Comment unapproved.', 'success');
+  };
+
+  const deleteComment = (id: string) => {
+    StorageService.deleteComment(id);
+    reloadFromStorage();
+    showToast('Comment deleted.', 'info');
+  };
+
+  const logActivity = (action: string, details: string, type: ActivityLog['type'] = 'system') => {
+    StorageService.logActivity(action, details, type, currentUser?.name || 'Admin');
+    setActivityLogs(StorageService.getActivityLogs());
+  };
+
+  const clearActivityLogs = () => {
+    StorageService.clearActivityLogs();
+    setActivityLogs([]);
+    showToast('Activity log cleared.', 'info');
+  };
+
+  const getSyncDiagnosticInfo = () => {
+    return StorageService.getSyncDiagnosticInfo();
+  };
+
+  const purgeAndRepairDatabase = () => {
+    const result = StorageService.purgeAndRepairData();
+    reloadFromStorage();
+    showToast(result.message, 'success');
+    return result;
+  };
+
+  const saveDraftAutoSave = (postId: string, data: any) => {
+    StorageService.saveDraftAutoSave(postId, data);
+  };
+
+  const getDraftAutoSave = (postId: string) => {
+    return StorageService.getDraftAutoSave(postId);
+  };
+
+  const clearDraftAutoSave = (postId: string) => {
+    StorageService.clearDraftAutoSave(postId);
   };
 
   const resetDatabase = () => {
@@ -424,6 +526,12 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return ok;
   };
 
+  const syncNow = () => {
+    StorageService.syncNow();
+    reloadFromStorage();
+    showToast('Everything is synchronized between user and admin.', 'success');
+  };
+
   // Only public published stories (or scheduled stories whose time has arrived)
   const now = Date.now();
   const publishedPosts = posts.filter(p => {
@@ -447,6 +555,7 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         subscribers,
         savedPostIds,
         comments,
+        activityLogs,
         isAdmin: isAdminAuthenticated,
         isAdminAuthenticated,
         currentUser,
@@ -462,6 +571,8 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         savePost,
         deletePost,
         duplicatePost,
+        bulkUpdatePosts,
+        bulkDeletePosts,
         saveCategory,
         deleteCategory,
         saveNavigation,
@@ -474,17 +585,27 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         toggleSavePost,
         incrementViews,
         addComment,
+        approveComment,
+        deleteComment,
+        logActivity,
+        clearActivityLogs,
         resetDatabase,
         importDatabase,
         exportDatabase,
         exportBlogs,
         importBlogs,
+        getSyncDiagnosticInfo,
+        purgeAndRepairDatabase,
+        saveDraftAutoSave,
+        getDraftAutoSave,
+        clearDraftAutoSave,
         previewPostData,
         setPreviewPostData,
         isSearchOpen,
         setIsSearchOpen,
         searchQuery,
         setSearchQuery,
+        syncNow,
         toasts,
         showToast,
         removeToast,

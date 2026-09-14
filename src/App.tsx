@@ -6,6 +6,7 @@ import { SearchModal } from './components/common/SearchModal';
 import { SavedPostsDrawer } from './components/common/SavedPostsDrawer';
 import { ToastContainer } from './components/common/ToastContainer';
 import { CookieConsentBanner } from './components/common/CookieConsentBanner';
+import { AdminSyncBanner } from './components/common/AdminSyncBanner';
 import { MobileBottomNav } from './components/common/MobileBottomNav';
 import { MobileMenuDrawer } from './components/common/MobileMenuDrawer';
 
@@ -65,14 +66,14 @@ function RestrictedPage({ requiredRole = 'Administrator' }: { requiredRole?: str
 
       <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
         <button
-          onClick={() => navigate('/admin')}
+          onClick={() => navigate('/sam')}
           className="w-full sm:w-auto px-5 py-2.5 bg-[#2F3A32] hover:bg-[#202722] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors inline-flex items-center justify-center gap-2 cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Dashboard</span>
         </button>
         <button
-          onClick={() => navigate('/admin/posts')}
+          onClick={() => navigate('/sam/posts')}
           className="w-full sm:w-auto px-5 py-2.5 bg-white hover:bg-[#EFEAE1] text-[#242522] border border-[#E5DED2] rounded-xl text-xs font-bold transition-colors cursor-pointer"
         >
           View My Articles
@@ -112,66 +113,73 @@ export function App() {
 
   // Route Dispatcher
   const renderContent = () => {
-    // 1. ADMIN ROUTES
+    // 1. ADMIN ROUTES (/sam)
     const baseRoute = currentPath.split('?')[0].split('#')[0] || '/';
 
+    // Redirect legacy /admin to /sam
     if (baseRoute.startsWith('/admin')) {
-      if (baseRoute === '/admin/login' || !isAdminAuthenticated) {
+      const newPath = baseRoute.replace('/admin', '/sam');
+      window.history.replaceState(null, '', newPath);
+      // We can update state or let it fall through
+    }
+
+    if (baseRoute.startsWith('/sam') || baseRoute.startsWith('/admin')) {
+      const normalizedRoute = baseRoute.startsWith('/admin') ? baseRoute.replace('/admin', '/sam') : baseRoute;
+      if (normalizedRoute === '/sam/login' || !isAdminAuthenticated) {
         return <AdminLogin />;
       }
 
       // Determine active tab for AdminLayout
       let activeTab = 'dashboard';
-      if (baseRoute.startsWith('/admin/posts')) activeTab = 'posts';
-      else if (baseRoute.startsWith('/admin/categories')) activeTab = 'categories';
-      else if (baseRoute.startsWith('/admin/comments')) activeTab = 'comments';
-      else if (baseRoute.startsWith('/admin/homepage')) activeTab = 'homepage';
-      else if (baseRoute.startsWith('/admin/navigation')) activeTab = 'navigation';
-      else if (baseRoute.startsWith('/admin/media')) activeTab = 'media';
-      else if (baseRoute.startsWith('/admin/subscribers')) activeTab = 'subscribers';
-      else if (baseRoute.startsWith('/admin/users')) activeTab = 'users';
-      else if (baseRoute.startsWith('/admin/settings')) activeTab = 'settings';
-      else if (baseRoute.startsWith('/admin/wordpress')) activeTab = 'wordpress';
+      if (normalizedRoute.startsWith('/sam/posts')) activeTab = 'posts';
+      else if (normalizedRoute.startsWith('/sam/categories')) activeTab = 'categories';
+      else if (normalizedRoute.startsWith('/sam/comments')) activeTab = 'comments';
+      else if (normalizedRoute.startsWith('/sam/homepage')) activeTab = 'homepage';
+      else if (normalizedRoute.startsWith('/sam/navigation')) activeTab = 'navigation';
+      else if (normalizedRoute.startsWith('/sam/media')) activeTab = 'media';
+      else if (normalizedRoute.startsWith('/sam/subscribers')) activeTab = 'subscribers';
+      else if (normalizedRoute.startsWith('/sam/users')) activeTab = 'users';
+      else if (normalizedRoute.startsWith('/sam/settings')) activeTab = 'settings';
 
       return (
         <AdminLayout activeTab={activeTab}>
           {(() => {
-            if (baseRoute === '/admin' || baseRoute === '/admin/dashboard' || baseRoute === '/admin/wordpress') {
+            if (normalizedRoute === '/sam' || normalizedRoute === '/sam/dashboard') {
               return <AdminDashboard />;
             }
-            if (baseRoute === '/admin/posts/new') {
+            if (normalizedRoute === '/sam/posts/new') {
               return <AdminPostEditor />;
             }
-            if (baseRoute.startsWith('/admin/posts/edit/')) {
-              const rawPostId = baseRoute.replace('/admin/posts/edit/', '');
+            if (normalizedRoute.startsWith('/sam/posts/edit/')) {
+              const rawPostId = normalizedRoute.replace('/sam/posts/edit/', '');
               const postId = decodeURIComponent(rawPostId).replace(/\/+$/, '');
               return <AdminPostEditor key={postId} postId={postId} />;
             }
-            if (baseRoute === '/admin/posts') {
+            if (normalizedRoute === '/sam/posts') {
               return <AdminPostsList />;
             }
-            if (baseRoute === '/admin/categories') {
+            if (normalizedRoute === '/sam/categories') {
               return canManageCategories(currentUser) ? <AdminCategories /> : <RestrictedPage requiredRole="Editor or Administrator" />;
             }
-            if (baseRoute === '/admin/comments') {
+            if (normalizedRoute === '/sam/comments') {
               return <AdminComments />;
             }
-            if (baseRoute === '/admin/homepage') {
+            if (normalizedRoute === '/sam/homepage') {
               return canManageHomepage(currentUser) ? <AdminHomepageCMS /> : <RestrictedPage requiredRole="Administrator" />;
             }
-            if (baseRoute === '/admin/navigation') {
+            if (normalizedRoute === '/sam/navigation') {
               return canManageNavigation(currentUser) ? <AdminNavigation /> : <RestrictedPage requiredRole="Administrator" />;
             }
-            if (baseRoute === '/admin/media') {
+            if (normalizedRoute === '/sam/media') {
               return <AdminMediaLibrary />;
             }
-            if (baseRoute === '/admin/subscribers') {
+            if (normalizedRoute === '/sam/subscribers') {
               return canManageSubscribers(currentUser) ? <AdminSubscribers /> : <RestrictedPage requiredRole="Editor or Administrator" />;
             }
-            if (baseRoute === '/admin/users') {
+            if (normalizedRoute === '/sam/users') {
               return canManageUsers(currentUser) ? <AdminUsers /> : <RestrictedPage requiredRole="Administrator" />;
             }
-            if (baseRoute === '/admin/settings') {
+            if (normalizedRoute === '/sam/settings') {
               return canManageSettings(currentUser) ? <AdminSiteSettings /> : <RestrictedPage requiredRole="Administrator" />;
             }
             return <AdminDashboard />;
@@ -253,6 +261,7 @@ export function App() {
       />
       <ToastContainer />
       <CookieConsentBanner />
+      <AdminSyncBanner />
       
       {/* Scroll to top button */}
       {showScrollTop && (

@@ -23,8 +23,6 @@ import {
   ExternalLink, 
   Film, 
   Minus, 
-  Link2,
-  Edit3, 
   Search, 
   Sparkles, 
   X, 
@@ -121,9 +119,6 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
       return existingPost.contentBlocks.map((b, idx) => ({
         id: b.id || `block-${idx}-${Date.now()}`,
         type: b.type || 'paragraph',
-        customLabel: b.customLabel,
-        linkUrl: b.linkUrl,
-        linkOpenNewTab: b.linkOpenNewTab,
         content: b.content || { text: '' }
       }));
     }
@@ -141,7 +136,6 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [showMediaPicker, setShowMediaPicker] = useState<number | 'featured' | null>(null);
-  const [activeBlockSettings, setActiveBlockSettings] = useState<number | null>(null);
 
   // Auto-generate slug and SEO title if creating new post
   const handleTitleChange = (newTitle: string) => {
@@ -208,17 +202,6 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
       updated[index] = {
         ...updated[index],
         content: { ...(updated[index].content || {}), ...newContent }
-      };
-      setBlocks(updated);
-    }
-  };
-
-  const updateBlockMeta = (index: number, meta: { customLabel?: string; linkUrl?: string; linkOpenNewTab?: boolean }) => {
-    const updated = [...blocks];
-    if (updated[index]) {
-      updated[index] = {
-        ...updated[index],
-        ...meta
       };
       setBlocks(updated);
     }
@@ -295,7 +278,7 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
     };
 
     savePost(postData);
-    navigate('/admin/posts');
+    navigate('/sam/posts');
   };
 
   // Build current temporary post object for preview
@@ -357,13 +340,13 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
           <button
-            onClick={() => navigate('/admin/posts')}
+            onClick={() => navigate('/sam/posts')}
             className="px-6 py-2.5 bg-[#8C6D53] hover:bg-[#735842] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
           >
             &larr; Back to All Articles
           </button>
           <button
-            onClick={() => navigate('/admin/posts/new')}
+            onClick={() => navigate('/sam/posts/new')}
             className="px-6 py-2.5 bg-white border border-[#D9CFC4] hover:bg-[#F7F4EE] text-[#211E1B] rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
           >
             + Create New Article
@@ -386,13 +369,13 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
         </p>
         <div className="pt-4 flex items-center justify-center gap-3">
           <button
-            onClick={() => navigate('/admin/posts')}
+            onClick={() => navigate('/sam/posts')}
             className="px-5 py-2.5 bg-[#2D2A26] text-white text-xs font-bold uppercase tracking-wider rounded-xl"
           >
             &larr; Back to My Articles
           </button>
           <button
-            onClick={() => navigate('/admin/users')}
+            onClick={() => navigate('/sam/users')}
             className="px-5 py-2.5 bg-white border border-[#E8DFD5] text-[#2D2A26] text-xs font-bold rounded-xl"
           >
             Switch to Administrator Role
@@ -408,7 +391,7 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
       <div className="sticky top-0 z-30 bg-[#FAF8F5]/95 backdrop-blur-md py-4 border-b border-[#E8DFD5] flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => navigate('/admin/posts')}
+            onClick={() => navigate('/sam/posts')}
             className="p-2 rounded-xl bg-white hover:bg-[#EFE9E1] border border-[#E8DFD5] text-[#2D2A26] transition-colors"
             title="Back to All Articles"
           >
@@ -538,55 +521,20 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                   className="bg-white rounded-2xl p-5 border border-[#E8DFD5] shadow-xs group hover:border-[#8C6D53] transition-all relative"
                 >
                   {/* Block Header & Reorder Toolbar */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b border-[#F0EBE6] text-xs">
-                    <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-                      <span className="w-5 h-5 rounded-full bg-[#EFE9E1] text-[#8C6D53] flex items-center justify-center text-[10px] font-bold shrink-0">
+                  <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#F0EBE6] text-xs">
+                    <span className="font-bold uppercase tracking-wider text-[#8C6D53] flex items-center gap-1.5">
+                      <span className="w-5 h-5 rounded-full bg-[#EFE9E1] text-[#8C6D53] flex items-center justify-center text-[10px]">
                         {idx + 1}
                       </span>
-                      
-                      {/* Customizable Gutenberg Block Name/Title */}
-                      <div className="flex items-center gap-1.5 flex-1">
-                        <input
-                          type="text"
-                          value={block.customLabel ?? (block.type?.replace?.(/_/g, ' ') || block.type)}
-                          onChange={(e) => updateBlockMeta(idx, { customLabel: e.target.value })}
-                          placeholder={block.type?.replace?.(/_/g, ' ')}
-                          className="px-2 py-1 text-xs font-bold text-[#8C6D53] bg-transparent hover:bg-[#FAF8F5] focus:bg-white focus:ring-1 focus:ring-[#8C6D53] border border-transparent hover:border-[#E8DFD5] focus:border-[#8C6D53] rounded-md transition-all uppercase tracking-wider max-w-[220px] truncate"
-                          title="Click to rename this block title"
-                        />
-                        <Edit3 className="w-3 h-3 text-[#A89F95] opacity-50 shrink-0" />
-                      </div>
+                      {block.type?.replace?.('_', ' ') || block.type}
+                    </span>
 
-                      {/* Link indicator badge if link is present */}
-                      {block.linkUrl && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-medium truncate max-w-[150px]">
-                          <Link2 className="w-3 h-3 shrink-0 text-emerald-600" />
-                          <span className="truncate">{block.linkUrl}</span>
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-1 shrink-0">
-                      {/* Link Button Toggle */}
-                      <button
-                        type="button"
-                        onClick={() => setActiveBlockSettings(activeBlockSettings === idx ? null : idx)}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
-                          activeBlockSettings === idx || block.linkUrl
-                            ? 'bg-[#EFE9E1] text-[#8C6D53] border border-[#D9CFC4]'
-                            : 'text-[#8A7E73] hover:bg-[#FAF8F5] hover:text-[#211E1B] border border-transparent'
-                        }`}
-                        title="Add or edit link URL for this block"
-                      >
-                        <Link2 className="w-3.5 h-3.5" />
-                        <span className="hidden sm:inline">{block.linkUrl ? 'Linked' : 'Add Link'}</span>
-                      </button>
-
+                    <div className="flex items-center gap-1">
                       <button
                         type="button"
                         onClick={() => moveBlock(idx, 'up')}
                         disabled={idx === 0}
-                        className="p-1 rounded hover:bg-[#EFE9E1] text-[#8A7E73] disabled:opacity-30 cursor-pointer"
+                        className="p-1 rounded hover:bg-[#EFE9E1] text-[#8A7E73] disabled:opacity-30"
                         title="Move Up"
                       >
                         <MoveUp className="w-3.5 h-3.5" />
@@ -595,7 +543,7 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                         type="button"
                         onClick={() => moveBlock(idx, 'down')}
                         disabled={idx === blocks.length - 1}
-                        className="p-1 rounded hover:bg-[#EFE9E1] text-[#8A7E73] disabled:opacity-30 cursor-pointer"
+                        className="p-1 rounded hover:bg-[#EFE9E1] text-[#8A7E73] disabled:opacity-30"
                         title="Move Down"
                       >
                         <MoveDown className="w-3.5 h-3.5" />
@@ -603,59 +551,13 @@ export const AdminPostEditor: React.FC<AdminPostEditorProps> = ({ postId }) => {
                       <button
                         type="button"
                         onClick={() => removeBlock(idx)}
-                        className="p-1 rounded hover:bg-red-50 text-[#8A7E73] hover:text-red-600 ml-1 cursor-pointer"
+                        className="p-1 rounded hover:bg-red-50 text-[#8A7E73] hover:text-red-600 ml-2"
                         title="Delete Block"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
-
-                  {/* Expandable Link Options Panel */}
-                  {activeBlockSettings === idx && (
-                    <div className="mb-4 p-3.5 bg-[#FAF8F5] border border-[#E8DFD5] rounded-xl text-xs space-y-2.5 animate-in fade-in-50 duration-150">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-[#211E1B] flex items-center gap-1.5">
-                          <Link2 className="w-3.5 h-3.5 text-[#8C6D53]" />
-                          Block Link Configuration
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => setActiveBlockSettings(null)}
-                          className="text-[#8A7E73] hover:text-[#211E1B] cursor-pointer"
-                        >
-                          <X className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                        <input
-                          type="url"
-                          value={block.linkUrl || ''}
-                          onChange={(e) => updateBlockMeta(idx, { linkUrl: e.target.value })}
-                          placeholder="https://example.com or /blog/my-guide"
-                          className="flex-1 px-3 py-1.5 bg-white border border-[#E8DFD5] rounded-lg text-xs text-[#211E1B] focus:outline-none focus:border-[#8C6D53]"
-                        />
-                        {block.linkUrl && (
-                          <button
-                            type="button"
-                            onClick={() => updateBlockMeta(idx, { linkUrl: '' })}
-                            className="px-2.5 py-1.5 text-xs text-red-600 hover:bg-red-50 rounded-lg border border-red-200 transition-colors cursor-pointer"
-                          >
-                            Remove Link
-                          </button>
-                        )}
-                      </div>
-                      <label className="flex items-center gap-2 text-[#5A534B] cursor-pointer select-none">
-                        <input
-                          type="checkbox"
-                          checked={block.linkOpenNewTab ?? true}
-                          onChange={(e) => updateBlockMeta(idx, { linkOpenNewTab: e.target.checked })}
-                          className="rounded border-[#D9CFC4] text-[#8C6D53] focus:ring-[#8C6D53]"
-                        />
-                        <span>Open link in new tab (target="_blank")</span>
-                      </label>
-                    </div>
-                  )}
 
                   {/* Block Content Inputs Based on Type */}
                   {block.type === 'paragraph' && (

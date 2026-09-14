@@ -37,7 +37,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   }, []);
 
   // Don't render on admin dashboard pages to prevent UI clash
-  if (currentPath.startsWith('/admin')) {
+  if (currentPath.startsWith('/sam') || currentPath.startsWith('/admin')) {
     return null;
   }
 

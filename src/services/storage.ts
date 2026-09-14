@@ -43,8 +43,8 @@ const INITIAL_COMMENTS: Comment[] = [
   {
     id: 'comm-1',
     postId: 'post-1',
-    authorName: 'Clara Montgomery',
-    authorEmail: 'clara.design@decorjournal.com',
+    authorName: 'Amina Khalid',
+    authorEmail: 'amina.design@gmail.com',
     content: 'The limewash wall texture guide completely changed our dining room! The subtle mineral cloud effect creates so much calm warmth.',
     createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
     approved: true
@@ -52,8 +52,8 @@ const INITIAL_COMMENTS: Comment[] = [
   {
     id: 'comm-2',
     postId: 'post-2',
-    authorName: 'Julian Sterling',
-    authorEmail: 'julian.home@decorjournal.com',
+    authorName: 'Zainab Tariq',
+    authorEmail: 'zainab.tariq@yahoo.com',
     content: 'Where did you source the honed travertine coffee table? It looks exceptional in your living room showcase.',
     createdAt: new Date(Date.now() - 86400000 * 4).toISOString(),
     approved: true
@@ -70,8 +70,8 @@ const INITIAL_COMMENTS: Comment[] = [
   {
     id: 'comm-4',
     postId: 'post-1',
-    authorName: 'Sophia Bennett',
-    authorEmail: 'sophia.b@decorjournal.com',
+    authorName: 'Farhan Shah',
+    authorEmail: 'farhan.s@gmail.com',
     content: 'Can limewash be applied over previously painted acrylic surfaces or does it need a mineral primer first?',
     createdAt: new Date(Date.now() - 3600000 * 5).toISOString(),
     approved: false
@@ -104,8 +104,8 @@ const INITIAL_COMMENTS: Comment[] = [
             logoSubtext: 'ONLINE HOME DECOR STORE',
             siteUrl: 'https://thedecordiary.store/',
             contactEmail: 'thedecordiarystore@gmail.com',
-            contactPhone: '+1 (800) 458-5863',
-            contactAddress: 'Design District, Suite 400, New York, NY 10012',
+            contactPhone: '+1 (555) 382-9100',
+            contactAddress: 'New York, NY',
           };
           localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(updated));
           localStorage.removeItem('haven_blog_settings_v1');
@@ -127,29 +127,6 @@ const INITIAL_COMMENTS: Comment[] = [
     const legacyCats = localStorage.getItem('haven_blog_categories_v1');
     if (legacyCats && !localStorage.getItem(STORAGE_KEYS.CATEGORIES)) {
       localStorage.setItem(STORAGE_KEYS.CATEGORIES, legacyCats);
-    }
-
-    // 4. Ensure users list and current user are clean and purged of legacy credentials
-    try {
-      const usersRaw = localStorage.getItem(STORAGE_KEYS.USERS);
-      if (usersRaw) {
-        const parsedUsers = JSON.parse(usersRaw);
-        if (Array.isArray(parsedUsers)) {
-          const hasLegacy = parsedUsers.some(
-            (u: any) =>
-              u.name?.toLowerCase?.().includes('samavia') ||
-              u.username?.toLowerCase?.().includes('samavia') ||
-              u.name?.toLowerCase?.().includes('mbi') ||
-              u.username?.toLowerCase?.().includes('mbi')
-          );
-          if (hasLegacy) {
-            localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(INITIAL_USERS));
-            localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
-          }
-        }
-      }
-    } catch {
-      // ignore parse errors
     }
   } catch (err) {
     console.warn('Decor Diary storage migration warning:', err);
@@ -233,25 +210,42 @@ function setItem<T>(key: string, value: T): void {
 export const StorageService = {
   // Posts CRUD
   getPosts: (): BlogPost[] => {
-    // Check if running inside WordPress with pre-bootstrapped posts
-    const wpInitial = (typeof window !== 'undefined' && (window as any).DECORDIARY_WP_BOOT?.initialPosts?.length > 0)
-      ? ((window as any).DECORDIARY_WP_BOOT.initialPosts as BlogPost[])
-      : null;
+    let stored = getItem<BlogPost[]>(STORAGE_KEYS.POSTS, INITIAL_POSTS);
+    if (!Array.isArray(stored)) stored = INITIAL_POSTS;
 
-    const baseDefault = wpInitial && wpInitial.length > 0 ? wpInitial : INITIAL_POSTS;
-    const stored = getItem<BlogPost[]>(STORAGE_KEYS.POSTS, baseDefault);
+    let needsSave = false;
+    stored = stored.map(p => {
+      const authorName = p.author?.name || '';
+      if (authorName.toLowerCase().includes('samavia') || authorName.toLowerCase().includes('mbi')) {
+        needsSave = true;
+        return {
+          ...p,
+          author: {
+            id: 'sam',
+            name: 'Sam Sterling',
+            role: 'Editor-in-Chief & Lead Interior Architect',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+            bio: 'Sam is an architect turned home stylist passionate about natural organic luxury.'
+          }
+        };
+      }
+      return p;
+    });
 
-    if (Array.isArray(stored) && stored.length < baseDefault.length) {
+    if (Array.isArray(stored) && stored.length < INITIAL_POSTS.length) {
       const storedIds = new Set(stored.map(p => p.id));
-      const missing = baseDefault.filter(p => !storedIds.has(p.id));
+      const missing = INITIAL_POSTS.filter(p => !storedIds.has(p.id));
       if (missing.length > 0) {
-        const merged = [...stored, ...missing];
-        try {
-          localStorage.setItem(STORAGE_KEYS.POSTS, JSON.stringify(merged));
-        } catch {
-          // ignore quota error
-        }
-        return merged;
+        stored = [...stored, ...missing];
+        needsSave = true;
+      }
+    }
+
+    if (needsSave) {
+      try {
+        localStorage.setItem(STORAGE_KEYS.POSTS, JSON.stringify(stored));
+      } catch {
+        // ignore quota error
       }
     }
     return stored;
@@ -283,55 +277,34 @@ export const StorageService = {
     const posts = StorageService.getPosts();
     const existingIndex = posts.findIndex(p => p.id === post.id);
     let updatedPosts: BlogPost[];
-    let preparedPost: BlogPost;
     
     if (existingIndex >= 0) {
-      preparedPost = {
+      updatedPosts = [...posts];
+      updatedPosts[existingIndex] = {
         ...post,
         updatedAt: new Date().toISOString()
       };
-      updatedPosts = [...posts];
-      updatedPosts[existingIndex] = preparedPost;
     } else {
-      preparedPost = {
-        ...post,
-        publishedAt: post.publishedAt || new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        viewsCount: post.viewsCount || 0,
-        savesCount: post.savesCount || 0,
-      };
-      updatedPosts = [preparedPost, ...posts];
+      updatedPosts = [
+        {
+          ...post,
+          publishedAt: post.publishedAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          viewsCount: post.viewsCount || 0,
+          savesCount: post.savesCount || 0,
+        },
+        ...posts
+      ];
     }
     
     setItem(STORAGE_KEYS.POSTS, updatedPosts);
-
-    // Asynchronously push to server API so other devices & users immediately get this post
-    if (typeof window !== 'undefined') {
-      fetch('/api/posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(preparedPost)
-      }).catch(err => {
-        // Silently catch offline or decoupled network errors
-        console.warn('Server sync background notice:', err);
-      });
-    }
-
-    return preparedPost;
+    return post;
   },
 
   deletePost: (id: string): void => {
     const posts = StorageService.getPosts();
     const filtered = posts.filter(p => p.id !== id);
     setItem(STORAGE_KEYS.POSTS, filtered);
-
-    if (typeof window !== 'undefined') {
-      fetch(`/api/posts/${encodeURIComponent(id)}`, {
-        method: 'DELETE'
-      }).catch(err => {
-        console.warn('Server delete sync notice:', err);
-      });
-    }
   },
 
   duplicatePost: (id: string): BlogPost | undefined => {
@@ -444,17 +417,7 @@ export const StorageService = {
 
   // Site Settings
   getSiteSettings: (): SiteSettings => {
-    const settings = getItem<SiteSettings>(STORAGE_KEYS.SETTINGS, INITIAL_SITE_SETTINGS);
-    if (settings.contactPhone === '03364585863' || settings.contactAddress === 'Sargodha') {
-      const sanitized: SiteSettings = {
-        ...settings,
-        contactPhone: '+1 (800) 458-5863',
-        contactAddress: 'Design District, Suite 400, New York, NY 10012',
-      };
-      StorageService.saveSiteSettings(sanitized);
-      return sanitized;
-    }
-    return settings;
+    return getItem<SiteSettings>(STORAGE_KEYS.SETTINGS, INITIAL_SITE_SETTINGS);
   },
 
   saveSiteSettings: (settings: SiteSettings): void => {
@@ -714,21 +677,19 @@ export const StorageService = {
 
   // Users & Roles Management
   getUsers: (): AdminUser[] => {
-    const stored = getItem<AdminUser[]>(STORAGE_KEYS.USERS, INITIAL_USERS);
-    if (
-      Array.isArray(stored) &&
-      stored.some(
-        u =>
-          u.username?.toLowerCase().includes('mbi') ||
-          u.name?.toLowerCase().includes('mbi') ||
-          u.username?.toLowerCase().includes('samavia') ||
-          u.name?.toLowerCase().includes('samavia')
-      )
-    ) {
-      setItem(STORAGE_KEYS.USERS, INITIAL_USERS);
-      return INITIAL_USERS;
+    let users = getItem<AdminUser[]>(STORAGE_KEYS.USERS, INITIAL_USERS);
+    if (!Array.isArray(users)) users = INITIAL_USERS;
+    const filtered = users.filter(u => {
+      const name = (u.name || '').toLowerCase();
+      const username = (u.username || '').toLowerCase();
+      return !name.includes('samavia') && !name.includes('mbi') && !username.includes('samavia') && !username.includes('mbi');
+    });
+    if (filtered.length !== users.length) {
+      try {
+        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(filtered));
+      } catch {}
     }
-    return stored;
+    return filtered.length > 0 ? filtered : INITIAL_USERS;
   },
 
   saveUser: (user: AdminUser): AdminUser => {
@@ -763,13 +724,7 @@ export const StorageService = {
   getCurrentUser: (): AdminUser | null => {
     const users = StorageService.getUsers();
     const current = getItem<AdminUser | null>(STORAGE_KEYS.CURRENT_USER, null);
-    if (
-      !current ||
-      current.username?.toLowerCase().includes('mbi') ||
-      current.name?.toLowerCase().includes('mbi') ||
-      current.username?.toLowerCase().includes('samavia') ||
-      current.name?.toLowerCase().includes('samavia')
-    ) {
+    if (!current) {
       return users[0] || INITIAL_USERS[0];
     }
     // Sync latest from users list
@@ -900,74 +855,8 @@ export const StorageService = {
     broadcastLiveSync('RESET_ALL');
   },
 
-  syncWithServer: async (): Promise<{ success: boolean; count: number; newPostsFound: boolean }> => {
-    try {
-      const isWp = typeof window !== 'undefined' && (window as any).DECORDIARY_WP_BOOT?.isWordPress;
-      const endpoint = isWp && (window as any).DECORDIARY_WP_BOOT?.restUrl
-        ? `${(window as any).DECORDIARY_WP_BOOT.restUrl}decordiary/v1/posts`
-        : '/api/posts';
-
-      const resp = await fetch(endpoint);
-      if (!resp.ok) {
-        return { success: false, count: StorageService.getPosts().length, newPostsFound: false };
-      }
-      const rawData = await resp.json();
-      const serverPosts: BlogPost[] = Array.isArray(rawData) ? rawData : (rawData?.posts || []);
-
-      if (Array.isArray(serverPosts) && serverPosts.length > 0) {
-        const localPosts = StorageService.getPosts();
-        const localIds = new Set(localPosts.map((p: any) => p.id));
-        
-        let newFound = false;
-        const merged = [...localPosts];
-
-        // Add any posts from server that local storage lacks
-        serverPosts.forEach((serverPost: BlogPost) => {
-          if (!localIds.has(serverPost.id)) {
-            merged.unshift(serverPost);
-            localIds.add(serverPost.id);
-            newFound = true;
-          } else {
-            // Update if server version is newer
-            const existingIdx = merged.findIndex(p => p.id === serverPost.id);
-            if (existingIdx >= 0 && serverPost.updatedAt && (!merged[existingIdx].updatedAt || new Date(serverPost.updatedAt) > new Date(merged[existingIdx].updatedAt!))) {
-              merged[existingIdx] = serverPost;
-              newFound = true;
-            }
-          }
-        });
-
-        if (newFound || merged.length !== localPosts.length) {
-          setItem(STORAGE_KEYS.POSTS, merged);
-          notifyListeners();
-        }
-
-        return { success: true, count: merged.length, newPostsFound: newFound };
-      }
-      return { success: true, count: StorageService.getPosts().length, newPostsFound: false };
-    } catch (err) {
-      console.warn('Server sync notice:', err);
-      return { success: false, count: StorageService.getPosts().length, newPostsFound: false };
-    }
-  },
-
-  syncNow: async (): Promise<{ success: boolean; count: number }> => {
-    // 1. Push local posts to server so server has any newly created blogs
-    try {
-      const localPosts = StorageService.getPosts();
-      await fetch('/api/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientPosts: localPosts, mode: 'merge' })
-      });
-    } catch {
-      // Offline fallback
-    }
-
-    // 2. Fetch fresh synchronized list back
-    const result = await StorageService.syncWithServer();
+  syncNow: (): void => {
     notifyListeners();
     broadcastLiveSync('MANUAL_SYNC');
-    return { success: result.success, count: result.count };
   }
 };

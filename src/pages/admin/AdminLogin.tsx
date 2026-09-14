@@ -17,7 +17,9 @@ export const AdminLogin: React.FC = () => {
 
     setTimeout(() => {
       const success = loginAdmin(password, undefined, username);
-      if (!success) {
+      if (success) {
+        navigate('/sam');
+      } else {
         setErrorMessage('Invalid username or password. Please try again.');
         setIsSubmitting(false);
       }

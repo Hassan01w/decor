@@ -114,7 +114,7 @@ export const SavedPostsDrawer: React.FC<SavedPostsDrawerProps> = ({ isOpen, onCl
         {savedPosts.length > 0 && (
           <div className="p-6 border-t border-[#E8DFD5] bg-white space-y-2">
             <a
-              href="https://pinterest.com"
+              href="https://www.pinterest.com/thedecordiary1214/"
               target="_blank"
               rel="noreferrer"
               className="w-full py-3 bg-[#E60023] hover:bg-[#C9001D] text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors shadow-sm"

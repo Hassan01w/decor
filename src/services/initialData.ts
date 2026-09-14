@@ -116,23 +116,23 @@ export const AUTHORS = [
 export const INITIAL_USERS: AdminUser[] = [
   {
     id: 'user-admin',
-    name: 'Decor Admin',
+    name: 'Alex Morgan',
     username: 'admin',
     password: 'vip123',
     email: 'thedecordiarystore@gmail.com',
     role: 'admin' as const,
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
     title: 'Store Administrator',
-    bio: 'Lead store administrator and design curator.',
+    bio: 'Lead store administrator and curator.',
     authorId: 'admin',
     createdAt: '2026-01-01'
   },
   {
     id: 'user-editor',
-    name: 'Editorial Director',
+    name: 'Sarah Jenkins',
     username: 'editor',
     password: 'vip123',
-    email: 'thedecordiarystore@gmail.com',
+    email: 'editor@thedecordiarystore.com',
     role: 'admin' as const,
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80',
     title: 'Editorial Director',
@@ -248,7 +248,7 @@ export const INITIAL_POSTS: BlogPost[] = [
         type: 'button',
         content: {
           buttonText: 'Save This Guide to Your Pinterest Board',
-          buttonUrl: 'https://pinterest.com',
+          buttonUrl: 'https://www.pinterest.com/thedecordiary1214/',
           buttonStyle: 'primary'
         }
       }
@@ -1043,8 +1043,8 @@ export const INITIAL_HOMEPAGE_CONFIG: HomepageConfig = {
   pinterestBanner: {
     title: 'Pin Your Dream Home Moodboard',
     description: 'Save these curated color palettes, pantry systems, and DIY plans directly to your Pinterest boards with a single click.',
-    handle: '@thedecordiary',
-    profileUrl: 'https://pinterest.com',
+    handle: '@thedecordiary1214',
+    profileUrl: 'https://www.pinterest.com/thedecordiary1214/',
     followersCount: '154k Pins Saved Monthly',
     boardImages: [
       'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=600&q=80',
@@ -1066,11 +1066,11 @@ export const INITIAL_SITE_SETTINGS: SiteSettings = {
   footerAbout: 'The Decor Diary is your destination for curated home decor, modern aesthetic accessories, and elegant minimalist furniture.',
   copyrightNotice: '© 2026 The Decor Diary. All rights reserved.',
   contactEmail: 'thedecordiarystore@gmail.com',
-  contactPhone: '+1 (800) 458-5863',
-  contactAddress: 'Design District, Suite 400, New York, NY 10012',
+  contactPhone: '+1 (555) 382-9100',
+  contactAddress: 'New York, NY',
   siteUrl: 'https://thedecordiary.store/',
   socialLinks: {
-    pinterest: 'https://pinterest.com',
+    pinterest: 'https://www.pinterest.com/thedecordiary1214/',
     instagram: 'https://instagram.com',
     facebook: 'https://facebook.com',
     tiktok: 'https://tiktok.com',
@@ -1078,7 +1078,7 @@ export const INITIAL_SITE_SETTINGS: SiteSettings = {
     twitter: 'https://twitter.com',
   },
   googleAnalyticsId: 'G-DECOR2026',
-  googleAdsenseId: 'ca-pub-5934235220195228',
+  googleAdsenseId: 'ca-pub-2818671808304288',
   headerAnnouncement: {
     enabled: true,
     text: '✨ Spring Sanctuary Issue Now Live: Read our New Arrivals',

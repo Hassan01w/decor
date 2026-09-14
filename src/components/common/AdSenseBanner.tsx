@@ -13,7 +13,7 @@ export const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
   slot = 'decor-diary-ad-slot'
 }) => {
   const { siteSettings } = useBlog();
-  const publisherId = siteSettings.googleAdsenseId || 'ca-pub-5934235220195228';
+  const publisherId = siteSettings.googleAdsenseId || 'ca-pub-2818671808304288';
   const adRef = useRef<HTMLModElement>(null);
   const isPushed = useRef(false);
 

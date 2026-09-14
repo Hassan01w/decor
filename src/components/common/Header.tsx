@@ -4,7 +4,8 @@ import {
   Search, 
   Bookmark, 
   Menu, 
-  X 
+  X, 
+  ShieldCheck
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -24,7 +25,8 @@ export const Header: React.FC<HeaderProps> = ({
     currentPath, 
     navigate, 
     setIsSearchOpen, 
-    savedPostIds
+    savedPostIds, 
+    isAdminAuthenticated
   } = useBlog();
 
   const [internalMenuOpen, setInternalMenuOpen] = useState(false);
@@ -85,7 +87,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="flex items-center gap-1 sm:gap-3 lg:w-1/4">
             <button
               onClick={() => setMenuOpen(!isMenuOpen)}
-              className="lg:hidden p-2 rounded-xl text-[#242522] hover:bg-[#EFEAE1] transition-colors cursor-pointer"
+              className="md:hidden p-2 rounded-xl text-[#242522] hover:bg-[#EFEAE1] transition-colors cursor-pointer"
               aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
               title="Menu"
             >
@@ -119,8 +121,8 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
           </div>
 
-          {/* Right: Actions (Saved Inspiration Pins) */}
-          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 lg:w-1/4">
+          {/* Right: Actions (Saved Inspiration) */}
+          <div className="flex items-center justify-end gap-1.5 sm:gap-3 lg:w-1/4">
             <button
               onClick={onOpenSavedDrawer}
               className="relative p-2 sm:p-2.5 rounded-full text-[#242522] hover:bg-[#EFEAE1] transition-colors group cursor-pointer"
@@ -137,8 +139,8 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Desktop Editorial Category Navigation Bar */}
-        <nav className="hidden lg:flex items-center justify-center border-t border-[#E5DED2] py-3 gap-8">
+        {/* Tablet & Desktop Editorial Category Navigation Bar */}
+        <nav className="hidden md:flex items-center justify-center border-t border-[#E5DED2] py-3 gap-6 lg:gap-8 overflow-x-auto scrollbar-none">
           {activeNavItems.map((item) => {
             const isActive = currentPath === item.url || (item.url !== '/' && currentPath.startsWith(item.url));
             return (

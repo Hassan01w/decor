@@ -11,12 +11,13 @@ import {
   Home, 
   BookOpen, 
   Layers, 
+  LayoutDashboard, 
+  ShieldCheck, 
   Sparkles, 
   ArrowRight,
   ExternalLink,
   Mail,
-  Info,
-  Lock
+  Info
 } from 'lucide-react';
 
 interface MobileMenuDrawerProps {
@@ -38,7 +39,9 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
     setIsSearchOpen, 
     savedPostIds, 
     categories,
-    publishedPosts
+    publishedPosts,
+    isAdminAuthenticated,
+    currentUser
   } = useBlog();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -308,7 +311,7 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
           </div>
         </div>
 
-        {/* Drawer Footer: Copyright & Admin Portal */}
+        {/* Drawer Footer: Copyright */}
         <div className="p-4 border-t border-[#E5DED2] bg-white/70 space-y-3 pb-8 mt-4">
           <div className="text-center space-y-1">
             <p className="text-[10px] text-[#A89F95]">
@@ -317,18 +320,6 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
             <p className="text-[9px] text-[#8C6D53] uppercase tracking-widest font-semibold">
               Curated Editorial & Home Aesthetics
             </p>
-          </div>
-          <div className="pt-2 flex justify-center">
-            <button
-              onClick={() => {
-                onClose();
-                navigate('/admin');
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs text-[#8C8578] hover:text-[#2F3A32] hover:bg-[#EFEAE1] transition-colors cursor-pointer"
-            >
-              <Lock className="w-3 h-3 text-[#8C6D53]" />
-              <span>Admin Portal</span>
-            </button>
           </div>
         </div>
 

@@ -146,7 +146,7 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({ slug }) =>
           </button>
           {isAdminAuthenticated && (
             <button
-              onClick={() => navigate('/admin/posts')}
+              onClick={() => navigate('/sam/posts')}
               className="px-6 py-3 bg-white text-[#242522] border border-[#D9CFC4] rounded-full text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 cursor-pointer hover:bg-[#EFEAE1] transition-colors"
             >
               <span>Go to Admin Articles</span>
@@ -281,14 +281,12 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({ slug }) =>
         {post.status !== 'published' && (
           <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between text-xs text-amber-900">
             <span className="font-semibold">⚠️ You are previewing a {post.status.toUpperCase()} article.</span>
-            {isAdminAuthenticated && (
-              <button 
-                onClick={() => navigate(`/admin/posts/edit/${post.id}`)}
-                className="underline font-bold cursor-pointer"
-              >
-                Edit in CMS &rarr;
-              </button>
-            )}
+            <button 
+              onClick={() => navigate(`/sam/posts/edit/${post.id}`)}
+              className="underline font-bold cursor-pointer"
+            >
+              Edit in CMS &rarr;
+            </button>
           </div>
         )}
 

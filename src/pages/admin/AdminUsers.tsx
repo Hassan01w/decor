@@ -377,7 +377,7 @@ export const AdminUsers: React.FC = () => {
                         required
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
-                        placeholder="e.g. editor"
+                        placeholder="e.g. admin"
                         className="w-full px-3.5 py-2.5 bg-white border border-[#E8DFD5] rounded-xl text-xs font-mono font-semibold text-[#211E1B] focus:outline-none focus:border-[#8C6D53]"
                       />
                     </div>

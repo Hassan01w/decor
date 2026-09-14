@@ -119,36 +119,22 @@ export const AdminDashboard: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          <button
-            onClick={() => {
-              setIsSyncing(true);
-              syncNow();
-              setTimeout(() => setIsSyncing(false), 600);
-            }}
-            disabled={isSyncing}
-            className="px-3.5 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer"
-            title="Synchronize blogs across all devices"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-emerald-600' : 'text-emerald-700'}`} />
-            <span>{isSyncing ? 'Syncing...' : 'Sync Blogs'}</span>
-          </button>
-
+        <div className="flex items-center gap-3">
           <button
             onClick={handleExportBackup}
-            className="px-3.5 py-2.5 bg-white hover:bg-[#EFE9E1] text-[#2D2A26] border border-[#D9CFC4] rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors shadow-xs cursor-pointer"
+            className="px-4 py-2.5 bg-white hover:bg-[#EFE9E1] text-[#2D2A26] border border-[#D9CFC4] rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors shadow-xs cursor-pointer"
             title="Download full CMS JSON backup"
           >
             <Download className="w-4 h-4 text-[#8C6D53]" />
-            <span>Backup</span>
+            <span>Export Backup</span>
           </button>
 
           <button
-            onClick={() => navigate('/admin/posts/new')}
-            className="px-4 py-2.5 bg-[#8C6D53] hover:bg-[#735842] text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all shadow-md cursor-pointer"
+            onClick={() => navigate('/sam/posts/new')}
+            className="px-5 py-2.5 bg-[#8C6D53] hover:bg-[#735842] text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all shadow-md cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Write Article</span>
+            <span>Write New Article</span>
           </button>
         </div>
       </div>
@@ -180,19 +166,19 @@ export const AdminDashboard: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3 text-xs text-[#D9CFC4]">
             <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
               <ShieldCheck className="w-3.5 h-3.5 text-[#C4A482]" />
-              <span>Admin Access: <strong>Editorial Team Active</strong></span>
+              <span>Role: <strong>Store Administrator</strong></span>
             </div>
             <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
               <Phone className="w-3.5 h-3.5 text-[#C4A482]" />
-              <span>{siteSettings.contactPhone || '+1 (800) 458-5863'}</span>
+              <span>+1 (555) 382-9100</span>
             </div>
             <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
               <Mail className="w-3.5 h-3.5 text-[#C4A482]" />
-              <span>{siteSettings.contactEmail || 'thedecordiarystore@gmail.com'}</span>
+              <span>thedecordiarystore@gmail.com</span>
             </div>
             <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
               <MapPin className="w-3.5 h-3.5 text-[#C4A482]" />
-              <span>{siteSettings.contactAddress || 'Design District, NY'}</span>
+              <span>Sargodha</span>
             </div>
           </div>
         </div>
@@ -260,7 +246,7 @@ export const AdminDashboard: React.FC = () => {
 
         {/* Reader Comments Alert */}
         <div 
-          onClick={() => navigate('/admin/comments')}
+          onClick={() => navigate('/sam/comments')}
           className="p-5 rounded-2xl bg-white border border-[#E8DFD5] shadow-xs flex items-center justify-between gap-4 cursor-pointer hover:border-[#8C6D53] transition-all group"
         >
           <div className="flex items-center gap-3.5">
@@ -307,7 +293,7 @@ export const AdminDashboard: React.FC = () => {
           ].map((idea, i) => (
             <button
               key={i}
-              onClick={() => navigate('/admin/posts/new')}
+              onClick={() => navigate('/sam/posts/new')}
               className="p-3 bg-white rounded-xl border border-[#E8DFD5] hover:border-[#8C6D53] text-left transition-all hover:shadow-2xs cursor-pointer group"
             >
               <span className="text-[10px] text-[#8C6D53] font-semibold uppercase block">
@@ -343,7 +329,7 @@ export const AdminDashboard: React.FC = () => {
                   />
                   <div className="min-w-0 flex-1">
                     <h4 
-                      onClick={() => navigate(`/admin/posts/edit/${post.id}`)}
+                      onClick={() => navigate(`/sam/posts/edit/${post.id}`)}
                       className="font-serif text-xs font-bold text-[#211E1B] truncate hover:text-[#8C6D53] cursor-pointer"
                     >
                       {post.title}
@@ -363,7 +349,7 @@ export const AdminDashboard: React.FC = () => {
                     Publish Now
                   </button>
                   <button
-                    onClick={() => navigate(`/admin/posts/edit/${post.id}`)}
+                    onClick={() => navigate(`/sam/posts/edit/${post.id}`)}
                     className="text-xs text-[#8C6D53] hover:underline font-medium"
                   >
                     Edit &rarr;
@@ -378,7 +364,7 @@ export const AdminDashboard: React.FC = () => {
       {/* Quick Launch Control Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div 
-          onClick={() => navigate('/admin/posts/new')}
+          onClick={() => navigate('/sam/posts/new')}
           className="p-5 rounded-2xl bg-white border border-[#E8DFD5] hover:border-[#8C6D53] hover:shadow-md transition-all cursor-pointer flex items-center justify-between group"
         >
           <div className="flex items-center gap-3.5">
@@ -396,7 +382,7 @@ export const AdminDashboard: React.FC = () => {
         </div>
 
         <div 
-          onClick={() => navigate('/admin/homepage')}
+          onClick={() => navigate('/sam/homepage')}
           className="p-5 rounded-2xl bg-white border border-[#E8DFD5] hover:border-[#8C6D53] hover:shadow-md transition-all cursor-pointer flex items-center justify-between group"
         >
           <div className="flex items-center gap-3.5">
@@ -414,7 +400,7 @@ export const AdminDashboard: React.FC = () => {
         </div>
 
         <div 
-          onClick={() => navigate('/admin/categories')}
+          onClick={() => navigate('/sam/categories')}
           className="p-5 rounded-2xl bg-white border border-[#E8DFD5] hover:border-[#8C6D53] hover:shadow-md transition-all cursor-pointer flex items-center justify-between group"
         >
           <div className="flex items-center gap-3.5">
@@ -458,7 +444,7 @@ export const AdminDashboard: React.FC = () => {
               </div>
 
               <button
-                onClick={() => navigate('/admin/posts')}
+                onClick={() => navigate('/sam/posts')}
                 className="text-xs uppercase font-bold tracking-wider text-[#8C6D53] hover:underline whitespace-nowrap"
               >
                 View All ({posts.length}) &rarr;
@@ -488,7 +474,7 @@ export const AdminDashboard: React.FC = () => {
                           <span className="text-[#8A7E73]">{post.viewsCount || 0} views</span>
                         </div>
                         <h4 
-                          onClick={() => navigate(`/admin/posts/edit/${post.id}`)}
+                          onClick={() => navigate(`/sam/posts/edit/${post.id}`)}
                           className="font-serif text-sm font-bold text-[#2D2A26] truncate cursor-pointer hover:text-[#8C6D53]"
                         >
                           {post.title}
@@ -540,7 +526,7 @@ export const AdminDashboard: React.FC = () => {
 
                       {/* Edit Button */}
                       <button
-                        onClick={() => navigate(`/admin/posts/edit/${post.id}`)}
+                        onClick={() => navigate(`/sam/posts/edit/${post.id}`)}
                         className="p-1.5 rounded-lg bg-[#FAF8F5] hover:bg-[#EFE9E1] text-[#2D2A26] border border-[#E8DFD5] transition-colors cursor-pointer"
                         title="Edit Article"
                       >
@@ -566,7 +552,7 @@ export const AdminDashboard: React.FC = () => {
               {topArticles.map((post, idx) => (
                 <div 
                   key={post.id} 
-                  onClick={() => navigate(`/admin/posts/edit/${post.id}`)}
+                  onClick={() => navigate(`/sam/posts/edit/${post.id}`)}
                   className="p-2.5 rounded-xl hover:bg-[#FAF8F5] transition-colors cursor-pointer flex items-center justify-between gap-3 group"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">

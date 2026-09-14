@@ -232,9 +232,9 @@ export const AdminSiteSettings: React.FC = () => {
               </label>
               <input
                 type="text"
-                value={settings.contactPhone || '+1 (800) 458-5863'}
+                value={settings.contactPhone || '+1 (555) 382-9100'}
                 onChange={(e) => setSettings({ ...settings, contactPhone: e.target.value })}
-                placeholder="+1 (800) 458-5863"
+                placeholder="+1 (555) 382-9100"
                 className="w-full px-3.5 py-2 bg-[#F7F4EE] border border-[#E5DED2] rounded-xl text-xs font-mono text-[#242522]"
               />
             </div>
@@ -245,9 +245,9 @@ export const AdminSiteSettings: React.FC = () => {
               </label>
               <input
                 type="text"
-                value={settings.contactAddress || 'Design District, Suite 400, New York, NY 10012'}
+                value={settings.contactAddress || 'New York, NY'}
                 onChange={(e) => setSettings({ ...settings, contactAddress: e.target.value })}
-                placeholder="Design District, Suite 400, New York, NY 10012"
+                placeholder="New York, NY"
                 className="w-full px-3.5 py-2 bg-[#F7F4EE] border border-[#E5DED2] rounded-xl text-xs text-[#242522]"
               />
             </div>
@@ -406,7 +406,7 @@ export const AdminSiteSettings: React.FC = () => {
               </label>
               <input
                 type="text"
-                value={settings.googleAdsenseId || 'ca-pub-5934235220195228'}
+                value={settings.googleAdsenseId || 'ca-pub-2818671808304288'}
                 onChange={(e) => setSettings({ ...settings, googleAdsenseId: e.target.value })}
                 placeholder="ca-pub-XXXXXXXXXXXXXXXX"
                 className="w-full px-3.5 py-2.5 bg-[#F7F4EE] border border-[#E5DED2] rounded-xl text-xs font-mono text-[#242522]"
@@ -427,7 +427,7 @@ export const AdminSiteSettings: React.FC = () => {
             <p>
               AdSense integration script & account meta tag are active with Publisher Client ID:{' '}
               <code className="font-mono bg-white px-2 py-0.5 rounded border border-[#E5DED2] text-[#242522] font-bold">
-                {settings.googleAdsenseId || 'ca-pub-5934235220195228'}
+                {settings.googleAdsenseId || 'ca-pub-2818671808304288'}
               </code>.
             </p>
             <div className="p-3 bg-white rounded-xl border border-[#E5DED2] space-y-1.5 text-[11px]">

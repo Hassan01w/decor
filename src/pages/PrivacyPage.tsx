@@ -21,12 +21,20 @@ export const PrivacyPage: React.FC = () => {
             <h3 className="text-xl font-bold mt-8 mb-4">2. How We Use Information</h3>
             <p>We use your information exclusively to deliver orders, provide customer support, and personalize your shopping experience. We never sell your personal data to third parties.</p>
             
-            <h3 className="text-xl font-bold mt-8 mb-4">3. Third-Party Advertising</h3>
-            <p>We use third-party advertising companies to serve ads when you visit our website. These companies may use cookies to serve ads based on your prior visits to our website or other websites.</p>
-            <p>Google's use of advertising cookies enables it and its partners to serve ads to you based on your visit to our sites and/or other sites on the Internet. You may opt out of personalized advertising by visiting Ads Settings.</p>
+            <h3 className="text-xl font-bold mt-8 mb-4">3. Google AdSense & Third-Party Advertising</h3>
+            <p>We partner with third-party advertising companies, including <strong>Google AdSense</strong>, to serve advertisements when you visit our website (<code>thedecordiary.store</code>).</p>
+            <ul className="list-disc list-inside space-y-2 mt-2">
+              <li>Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to this website or other websites across the Internet.</li>
+              <li>Google's use of advertising cookies (such as DoubleClick DART cookies) enables it and its partners to serve targeted ads to you based on your visit to our site and/or other sites on the World Wide Web.</li>
+              <li>You may opt out of personalized advertising by visiting <a href="https://adssettings.google.com/" target="_blank" rel="noopener noreferrer" className="text-[#8C6D53] underline font-semibold">Google Ads Settings</a>.</li>
+              <li>Alternatively, you can opt out of a third-party vendor's use of cookies for personalized advertising by visiting <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener noreferrer" className="text-[#8C6D53] underline font-semibold">aboutads.info</a>.</li>
+            </ul>
             
-            <h3 className="text-xl font-bold mt-8 mb-4">4. Cookies & Analytics</h3>
-            <p>We use anonymous cookies to analyze reader engagement patterns and improve page load performance.</p>
+            <h3 className="text-xl font-bold mt-8 mb-4">4. Cookies, Web Beacons & Analytics</h3>
+            <p>We use standard cookies and anonymous web analytics to analyze readership patterns, verify site performance, and improve your browsing experience. You can choose to disable cookies through your browser options at any time.</p>
+
+            <h3 className="text-xl font-bold mt-8 mb-4">5. User Rights (GDPR & CCPA)</h3>
+            <p>Under applicable data privacy regulations, you have the right to request access to, update, or delete any personal information we hold about you. To submit a request, contact our editorial desk at <a href="mailto:thedecordiarystore@gmail.com" className="text-[#8C6D53] underline font-semibold">thedecordiarystore@gmail.com</a>.</p>
           </div>
         </div>
       </div>

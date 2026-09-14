@@ -5,7 +5,7 @@ import path from 'path';
 
 export default defineConfig(() => {
   return {
-    base: '/',
+    base: process.env.VITE_BASE_PATH || '/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
@@ -15,6 +15,7 @@ export default defineConfig(() => {
     build: {
       outDir: 'dist',
       sourcemap: false,
+      chunkSizeWarningLimit: 1000,
     },
     server: {
       port: 3000,

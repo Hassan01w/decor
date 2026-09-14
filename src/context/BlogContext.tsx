@@ -202,7 +202,8 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       (siteSettings.siteName && siteSettings.siteName.toUpperCase().includes('HAVEN')) ||
       (siteSettings.logoSubtext && siteSettings.logoSubtext.toUpperCase().includes('LIFESTYLE JOURNAL')) ||
       siteSettings.contactPhone === '03364585863' ||
-      siteSettings.contactAddress === 'Sargodha'
+      siteSettings.contactAddress === 'Sargodha' ||
+      siteSettings.googleAdsenseId !== 'ca-pub-5934235220195228'
     ) {
       const sanitized: SiteSettings = {
         ...siteSettings,
@@ -213,12 +214,13 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         siteUrl: 'https://thedecordiary.store/',
         contactPhone: '+1 (800) 458-5863',
         contactAddress: 'Design District, Suite 400, New York, NY 10012',
-        contactEmail: 'thedecordiarystore@gmail.com'
+        contactEmail: 'thedecordiarystore@gmail.com',
+        googleAdsenseId: 'ca-pub-5934235220195228'
       };
       setSiteSettings(sanitized);
       StorageService.saveSiteSettings(sanitized);
     }
-  }, [siteSettings.logoText, siteSettings.siteName, siteSettings.logoSubtext, siteSettings.contactPhone, siteSettings.contactAddress]);
+  }, [siteSettings.logoText, siteSettings.siteName, siteSettings.logoSubtext, siteSettings.contactPhone, siteSettings.contactAddress, siteSettings.googleAdsenseId]);
 
   // Listen to browser back/forward and hash changes
   useEffect(() => {

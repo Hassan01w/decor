@@ -65,6 +65,28 @@ let lastUpdated = Date.now();
 // API ROUTES (Always before Vite middleware)
 // ==========================================
 
+// Explicit handler for Google AdSense ads.txt verification
+app.get("/ads.txt", (req, res) => {
+  res.setHeader("Content-Type", "text/plain; charset=utf-8");
+  res.setHeader("Cache-Control", "public, max-age=3600");
+  const adsPath = path.join(process.cwd(), "public", "ads.txt");
+  if (fs.existsSync(adsPath)) {
+    return res.sendFile(adsPath);
+  }
+  res.send("google.com, pub-5934235220195228, DIRECT, f08c47fec0942fa0\n");
+});
+
+// Explicit handler for robots.txt (ensure AdSense crawlers Mediapartners-Google & AdsBot-Google are allowed)
+app.get("/robots.txt", (req, res) => {
+  res.setHeader("Content-Type", "text/plain; charset=utf-8");
+  res.setHeader("Cache-Control", "public, max-age=3600");
+  const robotsPath = path.join(process.cwd(), "public", "robots.txt");
+  if (fs.existsSync(robotsPath)) {
+    return res.sendFile(robotsPath);
+  }
+  res.send("User-agent: *\nAllow: /\n\nUser-agent: Mediapartners-Google\nAllow: /\n\nUser-agent: AdsBot-Google\nAllow: /\n");
+});
+
 // Health Check
 app.get("/api/health", (req, res) => {
   res.json({

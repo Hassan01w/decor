@@ -1078,7 +1078,7 @@ export const INITIAL_SITE_SETTINGS: SiteSettings = {
     twitter: 'https://twitter.com',
   },
   googleAnalyticsId: 'G-DECOR2026',
-  googleAdsenseId: 'ca-pub-2818671808304288',
+  googleAdsenseId: 'ca-pub-5934235220195228',
   headerAnnouncement: {
     enabled: true,
     text: '✨ Spring Sanctuary Issue Now Live: Read our New Arrivals',

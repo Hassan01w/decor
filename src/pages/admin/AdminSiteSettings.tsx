@@ -406,7 +406,7 @@ export const AdminSiteSettings: React.FC = () => {
               </label>
               <input
                 type="text"
-                value={settings.googleAdsenseId || 'ca-pub-2818671808304288'}
+                value={settings.googleAdsenseId || 'ca-pub-5934235220195228'}
                 onChange={(e) => setSettings({ ...settings, googleAdsenseId: e.target.value })}
                 placeholder="ca-pub-XXXXXXXXXXXXXXXX"
                 className="w-full px-3.5 py-2.5 bg-[#F7F4EE] border border-[#E5DED2] rounded-xl text-xs font-mono text-[#242522]"
@@ -427,7 +427,7 @@ export const AdminSiteSettings: React.FC = () => {
             <p>
               AdSense integration script & account meta tag are active with Publisher Client ID:{' '}
               <code className="font-mono bg-white px-2 py-0.5 rounded border border-[#E5DED2] text-[#242522] font-bold">
-                {settings.googleAdsenseId || 'ca-pub-2818671808304288'}
+                {settings.googleAdsenseId || 'ca-pub-5934235220195228'}
               </code>.
             </p>
             <div className="p-3 bg-white rounded-xl border border-[#E5DED2] space-y-1.5 text-[11px]">

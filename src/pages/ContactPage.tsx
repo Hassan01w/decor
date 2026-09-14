@@ -46,12 +46,12 @@ export const ContactPage: React.FC = () => {
                 <div className="hidden sm:block w-px h-8 bg-[#E8DFD5]"></div>
                 <div className="flex flex-col items-center">
                   <span className="text-xs uppercase tracking-widest text-[#8C6D53] mb-1">Phone</span>
-                  <span>{siteSettings.contactPhone || '03364585863'}</span>
+                  <span>{siteSettings.contactPhone || '+1 (800) 458-5863'}</span>
                 </div>
                 <div className="hidden sm:block w-px h-8 bg-[#E8DFD5]"></div>
                 <div className="flex flex-col items-center">
                   <span className="text-xs uppercase tracking-widest text-[#8C6D53] mb-1">Address</span>
-                  <span>{siteSettings.contactAddress || 'Sargodha'}</span>
+                  <span>{siteSettings.contactAddress || 'Design District, New York, NY 10012'}</span>
                 </div>
               </div>
               

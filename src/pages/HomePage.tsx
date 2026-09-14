@@ -1,27 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useBlog } from '../context/BlogContext';
 import { BlogCard } from '../components/blog/BlogCard';
 import { NewsletterBox } from '../components/blog/NewsletterBox';
+import { CategorySlider } from '../components/home/CategorySlider';
+import { BlogSectionSlider } from '../components/home/BlogSectionSlider';
 import { TrendingTopicsSection } from '../components/home/TrendingTopicsSection';
 import { 
   ArrowRight, 
   Sparkles, 
   Share2, 
-  TrendingUp, 
   Flame, 
-  Heart, 
   Headphones, 
   Clock, 
-  Bookmark, 
   Compass, 
-  Layers, 
   ChevronDown, 
   ChevronUp, 
   Palette, 
-  Home, 
   BookOpen, 
   Star,
-  Check
+  SlidersHorizontal,
+  Layers
 } from 'lucide-react';
 import { getPinterestShareUrl } from '../utils/seo';
 
@@ -85,14 +83,14 @@ export const HomePage: React.FC = () => {
     homepageConfig, 
     publishedPosts, 
     categories, 
-    navigate, 
-    savedPostIds, 
-    toggleSavePost 
+    navigate 
   } = useBlog();
 
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>('all');
   const [activeTagFilter, setActiveTagFilter] = useState<string | null>(null);
-  const [visibleCount, setVisibleCount] = useState<number>(6);
+  const [sortOption, setSortOption] = useState<'latest' | 'popular' | 'quick'>('latest');
+  // Default to 15 blogs all together as explicitly requested
+  const [visibleCount, setVisibleCount] = useState<number>(15);
   const [activeStyleTab, setActiveStyleTab] = useState<string>('warm-minimalism');
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
@@ -100,29 +98,68 @@ export const HomePage: React.FC = () => {
   const sectionTitles = homepageConfig.sectionTitles;
   const sectionsOrder = homepageConfig.sectionsOrder;
 
-  // Filtered latest posts supporting both category and trending tag filtering
-  const filteredLatestPosts = publishedPosts.filter(p => {
-    if (activeTagFilter) {
-      const match = p.tags?.some(t => t.toLowerCase() === activeTagFilter.toLowerCase());
-      if (!match) return false;
-    }
-    if (selectedCategoryFilter !== 'all') {
-      if (p.categoryId !== selectedCategoryFilter) return false;
-    }
-    return true;
-  });
-
-  const featuredPosts = publishedPosts.filter(p => p.isFeatured);
-  const primaryFeatured = featuredPosts[0] || publishedPosts[0];
-  const secondaryFeatured1 = featuredPosts[1] || publishedPosts[1];
-  const secondaryFeatured2 = featuredPosts[2] || publishedPosts[2];
-  const spotlightPost = publishedPosts[3] || publishedPosts[0];
-
   const isSectionEnabled = (id: string) => {
     const sec = sectionsOrder.find(s => s.id === id);
     return sec ? sec.enabled : true;
   };
 
+  // 1. Featured Posts for Featured Slider
+  const featuredPosts = useMemo(() => {
+    const featured = publishedPosts.filter(p => p.isFeatured);
+    return featured.length > 0 ? featured : publishedPosts.slice(0, 6);
+  }, [publishedPosts]);
+
+  // 2. Trending & Most Read Slider Posts
+  const trendingPosts = useMemo(() => {
+    return [...publishedPosts]
+      .sort((a, b) => b.viewsCount - a.viewsCount)
+      .slice(0, 8);
+  }, [publishedPosts]);
+
+  // 3. Room Transformations & Styling Guides Slider Posts
+  const roomMakeoverPosts = useMemo(() => {
+    const matches = publishedPosts.filter(p => 
+      ['decor', 'improvement', 'kitchen'].includes(p.categoryId) ||
+      p.tags?.some(t => /room|space|wall|styling|furniture/i.test(t))
+    );
+    return matches.length >= 4 ? matches : publishedPosts.slice(2, 9);
+  }, [publishedPosts]);
+
+  // 4. Quick Decor Tips & Weekend DIYs Slider Posts
+  const quickTipsPosts = useMemo(() => {
+    const matches = publishedPosts.filter(p => 
+      ['diy', 'cleaning', 'organization', 'gardening', 'lifestyle'].includes(p.categoryId) ||
+      p.readingTimeMinutes <= 5
+    );
+    return matches.length >= 4 ? matches : publishedPosts.slice(4, 11);
+  }, [publishedPosts]);
+
+  // 5. 12-15 Blogs Grid Filtered & Sorted
+  const filteredLatestPosts = useMemo(() => {
+    let list = publishedPosts.filter(p => {
+      if (activeTagFilter) {
+        const match = p.tags?.some(t => t.toLowerCase() === activeTagFilter.toLowerCase());
+        if (!match) return false;
+      }
+      if (selectedCategoryFilter !== 'all') {
+        if (p.categoryId !== selectedCategoryFilter) return false;
+      }
+      return true;
+    });
+
+    if (sortOption === 'popular') {
+      list = [...list].sort((a, b) => b.viewsCount - a.viewsCount);
+    } else if (sortOption === 'quick') {
+      list = [...list].sort((a, b) => a.readingTimeMinutes - b.readingTimeMinutes);
+    } else {
+      // latest
+      list = [...list].sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+    }
+
+    return list;
+  }, [publishedPosts, activeTagFilter, selectedCategoryFilter, sortOption]);
+
+  const primaryFeatured = featuredPosts[0] || publishedPosts[0];
   const activeStyle = STYLE_PROFILES.find(s => s.id === activeStyleTab) || STYLE_PROFILES[0];
 
   const faqs = [
@@ -151,7 +188,7 @@ export const HomePage: React.FC = () => {
   return (
     <div className="bg-[#F7F4EE] text-[#242522] min-h-screen">
       
-      {/* 1. TOP EDITORIAL TICKER & TRENDING ANNOUNCEMENT */}
+      {/* TOP EDITORIAL TICKER & TRENDING ANNOUNCEMENT */}
       <aside aria-label="Editorial Trends & Announcements" className="bg-[#242522] text-[#F7F4EE] border-b border-[#3A3B36] py-2.5 px-4">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2">
@@ -182,7 +219,7 @@ export const HomePage: React.FC = () => {
 
       <div className="space-y-12 sm:space-y-16 pb-20 pt-6">
 
-        {/* 2. GRAND BENTO HERO SECTION (ZERO EMPTY SPACE) */}
+        {/* 1. HERO SECTION (EDITORIAL BLOGGING BENTO) */}
         {isSectionEnabled('hero') && (
           <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
@@ -202,7 +239,7 @@ export const HomePage: React.FC = () => {
                     </span>
                   </div>
 
-                  <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-[54px] font-bold tracking-tight text-[#242522] leading-[1.14]">
+                  <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-[52px] font-bold tracking-tight text-[#242522] leading-[1.14]">
                     {hero.title}{' '}
                     <span className="italic font-normal font-display text-[#2F3A32] underline decoration-[#C8A97E] decoration-2 underline-offset-8">
                       {hero.highlightWord}
@@ -213,7 +250,7 @@ export const HomePage: React.FC = () => {
                     {hero.subtitle}
                   </p>
 
-                  {/* CTAs & Quick Metrics */}
+                  {/* CTAs */}
                   <div className="pt-2 flex flex-wrap items-center gap-4">
                     <button
                       onClick={() => navigate(hero.ctaLink || '/blog')}
@@ -226,12 +263,8 @@ export const HomePage: React.FC = () => {
                     {hero.secondaryCtaText && (
                       <button
                         onClick={() => {
-                          const target = document.getElementById('categories');
-                          if (target) {
-                            target.scrollIntoView({ behavior: 'smooth' });
-                          } else {
-                            navigate('/blog');
-                          }
+                          const target = document.getElementById('categories-slider');
+                          target?.scrollIntoView({ behavior: 'smooth' });
                         }}
                         className="px-6 py-4 bg-[#F7F4EE] hover:bg-[#EFEAE1] text-[#242522] border border-[#E5DED2] rounded-full text-xs sm:text-sm font-bold uppercase tracking-wider transition-colors cursor-pointer"
                       >
@@ -391,39 +424,209 @@ export const HomePage: React.FC = () => {
           </section>
         )}
 
-        {/* 3. TRENDING THEMES & KEYWORD PILLS TICKER */}
-        {isSectionEnabled('trending_bar') && (
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-white border border-[#E5DED2] rounded-2xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4 shadow-xs">
-              <div className="flex items-center gap-2 text-xs uppercase font-bold tracking-widest text-[#2F3A32]">
-                <Flame className="w-4 h-4 text-[#C8A97E]" />
-                <span>Trending Interior Aesthetics:</span>
+        {/* 2. CATEGORIES SLIDER (RIGHT AFTER HERO AS REQUESTED) */}
+        {isSectionEnabled('categories') && (
+          <div id="categories-slider">
+            <CategorySlider categories={categories} />
+          </div>
+        )}
+
+        {/* 3. FEATURED BLOGS SLIDER (AS REQUESTED) */}
+        {isSectionEnabled('featured') && (
+          <BlogSectionSlider
+            id="featured-slider"
+            title={sectionTitles.featuredTitle || 'Featured Editorial Masterclasses'}
+            subtitle={sectionTitles.featuredSubtitle || 'Curated spotlights, slow living guides, and in-depth room tours'}
+            badgeText="Curated Spotlight"
+            badgeIcon={<Sparkles className="w-3.5 h-3.5 text-[#C8A97E]" />}
+            posts={featuredPosts}
+            viewAllUrl="/blog?filter=featured"
+            accentBadgeColor="#C8A97E"
+          />
+        )}
+
+        {/* 4. SLIDER 1: TRENDING & MOST READ BLOGS (WITH RANK COUNTERS) */}
+        <BlogSectionSlider
+          id="trending-slider"
+          title="Trending Stories & Most Read"
+          subtitle="The interior decor masterclasses capturing the most reader attention this week"
+          badgeText="Most Popular"
+          badgeIcon={<Flame className="w-3.5 h-3.5 fill-[#D97706] text-[#D97706]" />}
+          posts={trendingPosts}
+          showRank={true}
+          viewAllUrl="/blog?sort=popular"
+          accentBadgeColor="#D97706"
+        />
+
+        {/* 5. SLIDER 2: ROOM MAKEOVERS & STYLING GUIDES */}
+        <BlogSectionSlider
+          id="room-makeovers-slider"
+          title="Room Transformations & Styling Tours"
+          subtitle="Design formulas for serene bedrooms, layered living spaces, and artisanal kitchens"
+          badgeText="Room Sanctuaries"
+          badgeIcon={<Compass className="w-3.5 h-3.5 text-[#2F3A32]" />}
+          posts={roomMakeoverPosts}
+          viewAllUrl="/category/home-decor"
+          accentBadgeColor="#2F3A32"
+        />
+
+        {/* 6. SLIDER 3: QUICK DECOR TIPS & WEEKEND DIYS */}
+        <BlogSectionSlider
+          id="quick-tips-slider"
+          title="15-Minute Quick Tips & Weekend DIYs"
+          subtitle="Bite-sized styling rituals, pantry storage formulas, and budget wood refinishing"
+          badgeText="Quick Reads & DIY"
+          badgeIcon={<Clock className="w-3.5 h-3.5 text-[#8C6D53]" />}
+          posts={quickTipsPosts}
+          viewAllUrl="/category/diy"
+          accentBadgeColor="#8C6D53"
+        />
+
+        {/* 7. TRENDING TOPICS & INTERACTIVE TAG EXPLORER */}
+        <TrendingTopicsSection 
+          activeTag={activeTagFilter} 
+          onSelectTag={(tag) => {
+            setActiveTagFilter(tag);
+            if (tag) {
+              setTimeout(() => {
+                const el = document.getElementById('all-blogs-archive');
+                el?.scrollIntoView({ behavior: 'smooth' });
+              }, 100);
+            }
+          }}
+        />
+
+        {/* 8. 12 TO 15 BLOGS ALL TOGETHER (THE COMPLETE JOURNAL ARCHIVE GRID) */}
+        {isSectionEnabled('latest') && (
+          <section id="all-blogs-archive" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 scroll-mt-24">
+            {/* Section Header */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#E5DED2] pb-4">
+              <div>
+                <span className="text-[11px] uppercase font-bold tracking-[0.2em] text-[#C8A97E] flex items-center gap-1.5 mb-1">
+                  <Layers className="w-3.5 h-3.5 text-[#C8A97E]" />
+                  <span>The Complete Journal Archive</span>
+                </span>
+                <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#242522]">
+                  {sectionTitles.latestTitle || 'Explore All Articles & Masterclasses'}
+                </h2>
+                <p className="text-xs sm:text-sm text-[#7A7369] mt-1">
+                  Browse {publishedPosts.length} stories across interior architecture, organization, and slow living.
+                </p>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-                {[
-                  { label: 'Warm Minimalism', query: 'minimalism' },
-                  { label: 'Walk-In Pantries', query: 'organization' },
-                  { label: 'Limewash Walls', query: 'diy' },
-                  { label: 'Japandi Bedroom', query: 'bedroom' },
-                  { label: 'Indoor Olive Trees', query: 'plants' },
-                  { label: 'Travertine Coffee Tables', query: 'furniture' },
-                  { label: 'Aesthetic Lighting', query: 'lighting' }
-                ].map(item => (
-                  <button
-                    key={item.label}
-                    onClick={() => navigate('/blog')}
-                    className="px-3.5 py-1.5 rounded-full text-xs font-medium bg-[#F7F4EE] hover:bg-[#2F3A32] hover:text-white border border-[#E5DED2] text-[#242522] transition-all cursor-pointer shadow-2xs hover:scale-102"
-                  >
-                    {item.label}
-                  </button>
-                ))}
+              {/* Sort selector */}
+              <div className="flex items-center gap-2 self-start md:self-end">
+                <span className="text-xs text-[#7A7369] flex items-center gap-1 font-medium">
+                  <SlidersHorizontal className="w-3.5 h-3.5" />
+                  <span>Sort by:</span>
+                </span>
+                <select
+                  value={sortOption}
+                  onChange={(e) => setSortOption(e.target.value as 'latest' | 'popular' | 'quick')}
+                  className="bg-white border border-[#E5DED2] rounded-full px-3 py-1.5 text-xs font-semibold text-[#242522] focus:outline-none focus:border-[#2F3A32] cursor-pointer"
+                >
+                  <option value="latest">Newest First</option>
+                  <option value="popular">Most Read</option>
+                  <option value="quick">Shortest Read</option>
+                </select>
               </div>
             </div>
+
+            {/* Category Filter Pills Bar */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+              <button
+                onClick={() => setSelectedCategoryFilter('all')}
+                className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                  selectedCategoryFilter === 'all'
+                    ? 'bg-[#2F3A32] text-[#F7F4EE] shadow-xs'
+                    : 'bg-white text-[#5A534B] border border-[#E5DED2] hover:bg-[#EFEAE1]'
+                }`}
+              >
+                All Stories ({publishedPosts.length})
+              </button>
+              {categories.map(cat => {
+                const catCount = publishedPosts.filter(p => p.categoryId === cat.id).length;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategoryFilter(cat.id)}
+                    className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
+                      selectedCategoryFilter === cat.id
+                        ? 'bg-[#2F3A32] text-[#F7F4EE] shadow-xs'
+                        : 'bg-white text-[#5A534B] border border-[#E5DED2] hover:bg-[#EFEAE1]'
+                    }`}
+                  >
+                    {cat.name} ({catCount})
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Active Tag Filter Banner */}
+            {activeTagFilter && (
+              <div className="p-3.5 rounded-2xl bg-[#EFEAE1] border border-[#E5DED2] flex items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2 text-[#242522]">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>
+                    Filtered by topic: <strong className="text-[#2F3A32]">#{activeTagFilter}</strong> ({filteredLatestPosts.length} {filteredLatestPosts.length === 1 ? 'article' : 'articles'} found)
+                  </span>
+                </div>
+                <button
+                  onClick={() => setActiveTagFilter(null)}
+                  className="text-xs font-bold text-[#2F3A32] hover:underline cursor-pointer"
+                >
+                  Clear Tag Filter &times;
+                </button>
+              </div>
+            )}
+
+            {/* 12 to 15 Articles Grid */}
+            {filteredLatestPosts.length === 0 ? (
+              <div className="text-center py-16 bg-white rounded-3xl border border-[#E5DED2] p-8 space-y-4">
+                <p className="font-serif text-xl font-bold text-[#242522]">
+                  No articles currently match this combination
+                </p>
+                <p className="text-xs text-[#7A7369] max-w-md mx-auto">
+                  Try clearing your tag or category filter to discover other masterclasses from our editorial team.
+                </p>
+                <div className="pt-2">
+                  <button
+                    onClick={() => {
+                      setActiveTagFilter(null);
+                      setSelectedCategoryFilter('all');
+                    }}
+                    className="px-6 py-2.5 bg-[#2F3A32] hover:bg-[#202722] text-white rounded-full text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                  >
+                    Reset All Filters
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                {filteredLatestPosts.slice(0, visibleCount).map(post => (
+                  <BlogCard key={post.id} post={post} variant="standard" />
+                ))}
+              </div>
+            )}
+
+            {/* Load More Button */}
+            {filteredLatestPosts.length > visibleCount && (
+              <div className="text-center pt-6 space-y-2">
+                <button
+                  onClick={() => setVisibleCount(prev => prev + 6)}
+                  className="px-8 py-3.5 bg-white hover:bg-[#EFEAE1] text-[#242522] border border-[#E5DED2] rounded-full text-xs font-bold uppercase tracking-wider transition-all shadow-xs cursor-pointer hover:border-[#2F3A32]"
+                >
+                  Load More Articles ({filteredLatestPosts.length - visibleCount} remaining)
+                </button>
+                <p className="text-[11px] text-[#7A7369]">
+                  Showing {Math.min(visibleCount, filteredLatestPosts.length)} of {filteredLatestPosts.length} articles
+                </p>
+              </div>
+            )}
           </section>
         )}
 
-        {/* 4. INTERACTIVE "FIND YOUR SIGNATURE AESTHETIC" STUDIO */}
+        {/* 9. INTERACTIVE "FIND YOUR SIGNATURE AESTHETIC" STUDIO */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-3xl border border-[#E5DED2] p-6 sm:p-10 shadow-sm space-y-6">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#EFEAE1] pb-5">
@@ -514,337 +717,7 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* 4.5. TRENDING TOPICS & POPULAR TAGS */}
-        <TrendingTopicsSection 
-          activeTag={activeTagFilter} 
-          onSelectTag={(tag) => {
-            setActiveTagFilter(tag);
-            if (tag) {
-              setTimeout(() => {
-                const el = document.getElementById('latest-articles');
-                el?.scrollIntoView({ behavior: 'smooth' });
-              }, 100);
-            }
-          }}
-        />
-
-        {/* 5. POPULAR CATEGORIES (ROOM BY ROOM & LIFESTYLE) */}
-        {isSectionEnabled('categories') && (
-          <section id="categories" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 scroll-mt-24">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#E5DED2] pb-4">
-              <div>
-                <span className="text-xs uppercase font-bold tracking-[0.2em] text-[#C8A97E] block mb-1">
-                  Spaces & Sanctuaries
-                </span>
-                <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#242522]">
-                  {sectionTitles.categoriesTitle || 'Browse by Lifestyle Category'}
-                </h2>
-              </div>
-              <p className="text-xs sm:text-sm text-[#7A7369] max-w-md">
-                {sectionTitles.categoriesSubtitle || 'Explore dedicated design principles for every room in your home.'}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-              {categories.map(category => {
-                const count = publishedPosts.filter(p => p.categoryId === category.id).length;
-
-                return (
-                  <div
-                    key={category.id}
-                    onClick={() => navigate(`/category/${category.slug}`)}
-                    className="group relative rounded-3xl overflow-hidden aspect-4/5 cursor-pointer shadow-xs hover:shadow-2xl transition-all duration-300 border border-[#E5DED2]"
-                  >
-                    <img
-                      src={category.image}
-                      alt={category.name}
-                      loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent group-hover:from-black/90 transition-all" />
-
-                    <div className="absolute inset-0 p-5 sm:p-6 flex flex-col justify-end text-white">
-                      <span className="text-[11px] font-semibold text-[#E5DED2] uppercase tracking-wider mb-1">
-                        {count} {count === 1 ? 'Article' : 'Articles'}
-                      </span>
-                      <h3 className="font-serif text-lg sm:text-xl font-bold group-hover:text-[#C8A97E] transition-colors leading-snug">
-                        {category.name}
-                      </h3>
-                      <p className="text-[11px] text-[#D5CCC0] line-clamp-2 mt-1.5 opacity-90 group-hover:opacity-100 transition-opacity">
-                        {category.description}
-                      </p>
-                      
-                      <div className="pt-2 flex items-center gap-1 text-[11px] font-bold text-[#C8A97E] group-hover:translate-x-1 transition-transform">
-                        <span>View Room Guide</span>
-                        <ArrowRight className="w-3 h-3" />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* 6. FEATURED EDITORIAL STORIES (FULL BENTO MAGAZINE - NO GAPS) */}
-        {isSectionEnabled('featured') && (
-          <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#E5DED2] pb-4">
-              <div>
-                <span className="text-xs uppercase font-bold tracking-[0.2em] text-[#C8A97E] block mb-1">
-                  Curated Spotlight
-                </span>
-                <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#242522]">
-                  {sectionTitles.featuredTitle || 'Featured Editorial Stories'}
-                </h2>
-              </div>
-              <p className="text-xs sm:text-sm text-[#7A7369] max-w-md">
-                {sectionTitles.featuredSubtitle || 'In-depth architectural tours, pantry makeovers, and seasonal moodboards.'}
-              </p>
-            </div>
-
-            {/* Fully Balanced Magazine Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-              
-              {/* LEFT COLUMN: Main Lead Article + Sub-feature capsule */}
-              <div className="lg:col-span-7 space-y-6 flex flex-col justify-between">
-                {primaryFeatured && (
-                  <BlogCard post={primaryFeatured} variant="featured" />
-                )}
-
-                {/* Sub-feature 2-column strip */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {secondaryFeatured2 && (
-                    <div 
-                      onClick={() => navigate(`/blog/${secondaryFeatured2.slug}`)}
-                      className="group bg-white rounded-3xl p-5 border border-[#E5DED2] hover:border-[#2F3A32] hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col justify-between shadow-xs"
-                    >
-                      <div className="space-y-3">
-                        <div className="relative aspect-16/10 rounded-2xl overflow-hidden bg-[#EFEAE1]">
-                          <img 
-                            src={secondaryFeatured2.featuredImage} 
-                            alt={secondaryFeatured2.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
-                          />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 text-[11px] text-[#7A7369] mb-1.5">
-                            <span>{secondaryFeatured2.readingTimeMinutes} min read</span>
-                            <span>•</span>
-                            <span>By {secondaryFeatured2.author.name}</span>
-                          </div>
-                          <h4 className="font-serif text-base font-bold text-[#242522] group-hover:text-[#2F3A32] transition-colors leading-snug line-clamp-2">
-                            {secondaryFeatured2.title}
-                          </h4>
-                        </div>
-                      </div>
-
-                      <div className="pt-3 mt-3 border-t border-[#EFEAE1] flex items-center justify-between text-xs font-bold text-[#2F3A32]">
-                        <span className="text-[11px] uppercase tracking-wider">Read Story</span>
-                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform text-[#C8A97E]" />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Philosophy & Craftsmanship Capsule */}
-                  <div className="bg-gradient-to-br from-white via-[#F7F4EE] to-[#EFEAE1] rounded-3xl p-6 border border-[#E5DED2] flex flex-col justify-between shadow-xs">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white text-[#2F3A32] text-[10px] font-bold uppercase tracking-widest border border-[#E5DED2]">
-                          <Sparkles className="w-3 h-3 text-[#C8A97E]" />
-                          <span>Slow Living Motto</span>
-                        </span>
-                        <span className="text-[10px] text-[#7A7369] uppercase font-bold">Issue Nº 24</span>
-                      </div>
-
-                      <blockquote className="font-serif italic text-sm sm:text-base text-[#242522] leading-relaxed">
-                        "Have nothing in your houses that you do not know to be useful or believe to be beautiful."
-                      </blockquote>
-
-                      <p className="text-xs text-[#5A534B] leading-relaxed">
-                        Curated timeless textures, warm earth tones, and morning rituals for the peaceful sanctuary.
-                      </p>
-                    </div>
-
-                    <div className="pt-4 mt-2 border-t border-[#E5DED2] flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <img 
-                          src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" 
-                          alt="Sam" 
-                          className="w-7 h-7 rounded-full object-cover ring-2 ring-white" 
-                        />
-                        <div>
-                          <span className="text-xs font-bold text-[#242522] block leading-tight">Sam</span>
-                          <span className="text-[10px] text-[#7A7369] block leading-tight">Editor-in-Chief</span>
-                        </div>
-                      </div>
-
-                      <button 
-                        onClick={() => navigate('/blog')}
-                        className="text-xs font-bold text-[#2F3A32] hover:text-[#C8A97E] uppercase tracking-wider flex items-center gap-1 transition-colors cursor-pointer"
-                      >
-                        <span>Explore</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* RIGHT COLUMN: Stacked Horizontal Cards */}
-              <div className="lg:col-span-5 space-y-6 flex flex-col justify-between">
-                {secondaryFeatured1 && (
-                  <BlogCard post={secondaryFeatured1} variant="horizontal" />
-                )}
-
-                {spotlightPost && (
-                  <BlogCard post={spotlightPost} variant="horizontal" />
-                )}
-
-                {/* 3 Quick Interior Rules Bento */}
-                <div className="bg-white rounded-3xl p-6 border border-[#E5DED2] shadow-xs space-y-4">
-                  <div className="flex items-center justify-between border-b border-[#EFEAE1] pb-3">
-                    <span className="text-xs font-bold uppercase tracking-widest text-[#2F3A32] flex items-center gap-2">
-                      <BookOpen className="w-4 h-4 text-[#C8A97E]" />
-                      <span>Stylist's Rulebook</span>
-                    </span>
-                    <span className="text-[10px] text-[#7A7369]">Pro Principles</span>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3">
-                      <span className="w-5 h-5 rounded-full bg-[#F7F4EE] text-[#2F3A32] text-xs font-bold flex items-center justify-center shrink-0 border border-[#E5DED2]">1</span>
-                      <p className="text-xs text-[#5A534B]"><strong>Rule of Three:</strong> Group decorative ceramics and books in odd numbers to create dynamic visual harmony.</p>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="w-5 h-5 rounded-full bg-[#F7F4EE] text-[#2F3A32] text-xs font-bold flex items-center justify-center shrink-0 border border-[#E5DED2]">2</span>
-                      <p className="text-xs text-[#5A534B]"><strong>Layered Lighting:</strong> Never rely on a single ceiling pendant; layer task lamps and warm sconces at 2700K.</p>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <span className="w-5 h-5 rounded-full bg-[#F7F4EE] text-[#2F3A32] text-xs font-bold flex items-center justify-center shrink-0 border border-[#E5DED2]">3</span>
-                      <p className="text-xs text-[#5A534B]"><strong>Tactile Contrast:</strong> Offset cold stone and mirrors with raw linen, bouclé, and unfinished timber.</p>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={() => navigate('/blog')}
-                    className="w-full py-2.5 bg-[#F7F4EE] hover:bg-[#EFEAE1] text-[#242522] rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors border border-[#E5DED2] cursor-pointer"
-                  >
-                    <span>Read Full Decor Guides</span>
-                    <ArrowRight className="w-3.5 h-3.5 text-[#C8A97E]" />
-                  </button>
-                </div>
-              </div>
-
-            </div>
-          </section>
-        )}
-
-        {/* 7. LATEST ARTICLES FEED (RICH GRID & FILTER) */}
-        {isSectionEnabled('latest') && (
-          <section id="latest-articles" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 scroll-mt-24">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-[#E5DED2] pb-4">
-              <div>
-                <span className="text-xs uppercase font-bold tracking-[0.2em] text-[#C8A97E] block mb-1">
-                  The Curated Journal
-                </span>
-                <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-[#242522]">
-                  {sectionTitles.latestTitle || 'Latest Articles & Masterclasses'}
-                </h2>
-              </div>
-
-              {/* Category Filter Pills */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full">
-                <button
-                  onClick={() => setSelectedCategoryFilter('all')}
-                  className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                    selectedCategoryFilter === 'all'
-                      ? 'bg-[#2F3A32] text-[#F7F4EE] shadow-xs'
-                      : 'bg-white text-[#5A534B] border border-[#E5DED2] hover:bg-[#EFEAE1]'
-                  }`}
-                >
-                  All Stories ({publishedPosts.length})
-                </button>
-                {categories.slice(0, 6).map(cat => {
-                  const catCount = publishedPosts.filter(p => p.categoryId === cat.id).length;
-                  return (
-                    <button
-                      key={cat.id}
-                      onClick={() => setSelectedCategoryFilter(cat.id)}
-                      className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                        selectedCategoryFilter === cat.id
-                          ? 'bg-[#2F3A32] text-[#F7F4EE] shadow-xs'
-                          : 'bg-white text-[#5A534B] border border-[#E5DED2] hover:bg-[#EFEAE1]'
-                      }`}
-                    >
-                      {cat.name} ({catCount})
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Active Tag Filter Notification Banner */}
-            {activeTagFilter && (
-              <div className="p-3.5 rounded-2xl bg-[#EFEAE1] border border-[#E5DED2] flex items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2 text-[#242522]">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>
-                    Filtered by trending topic: <strong className="text-[#2F3A32]">#{activeTagFilter}</strong> ({filteredLatestPosts.length} {filteredLatestPosts.length === 1 ? 'article' : 'articles'} found)
-                  </span>
-                </div>
-                <button
-                  onClick={() => setActiveTagFilter(null)}
-                  className="text-xs font-bold text-[#2F3A32] hover:underline cursor-pointer"
-                >
-                  Clear Tag Filter &times;
-                </button>
-              </div>
-            )}
-
-            {/* Articles Grid or Empty State */}
-            {filteredLatestPosts.length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-3xl border border-[#E5DED2] p-8 space-y-4">
-                <p className="font-serif text-xl font-bold text-[#242522]">
-                  No articles currently match this combination
-                </p>
-                <p className="text-xs text-[#7A7369] max-w-md mx-auto">
-                  Try clearing your tag or category filter to discover other masterclasses from our editorial team.
-                </p>
-                <div className="pt-2">
-                  <button
-                    onClick={() => {
-                      setActiveTagFilter(null);
-                      setSelectedCategoryFilter('all');
-                    }}
-                    className="px-6 py-2.5 bg-[#2F3A32] hover:bg-[#202722] text-white rounded-full text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
-                  >
-                    Reset All Filters
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-                {filteredLatestPosts.slice(0, visibleCount).map(post => (
-                  <BlogCard key={post.id} post={post} variant="standard" />
-                ))}
-              </div>
-            )}
-
-            {filteredLatestPosts.length > visibleCount && (
-              <div className="text-center pt-6">
-                <button
-                  onClick={() => setVisibleCount(prev => prev + 3)}
-                  className="px-8 py-3.5 bg-white hover:bg-[#EFEAE1] text-[#242522] border border-[#E5DED2] rounded-full text-xs font-bold uppercase tracking-wider transition-all shadow-xs cursor-pointer hover:border-[#2F3A32]"
-                >
-                  Load More Articles ({filteredLatestPosts.length - visibleCount} remaining)
-                </button>
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* 8. PINTEREST INSPIRATION & MOODBOARD MOSAIC */}
+        {/* 10. PINTEREST INSPIRATION & MOODBOARD MOSAIC */}
         {isSectionEnabled('pinterest_grid') && (
           <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="bg-white rounded-3xl p-8 sm:p-10 border border-[#E5DED2] space-y-6 shadow-xs">
@@ -904,7 +777,7 @@ export const HomePage: React.FC = () => {
           </section>
         )}
 
-        {/* 9. ELEVATED DECOR MASTERCLASS & INTERACTIVE FAQ ACCORDION (UPGRADED SEO SECTION) */}
+        {/* 11. ELEVATED DECOR MASTERCLASS & INTERACTIVE FAQ ACCORDION (SEO SECTION) */}
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-white rounded-3xl p-8 sm:p-12 border border-[#E5DED2] shadow-xs space-y-10">
             
@@ -988,7 +861,7 @@ export const HomePage: React.FC = () => {
           </div>
         </section>
 
-        {/* 10. NEWSLETTER BOX */}
+        {/* 12. NEWSLETTER SUBSCRIPTION BOX */}
         {isSectionEnabled('newsletter') && (
           <section id="newsletter" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24">
             <NewsletterBox />

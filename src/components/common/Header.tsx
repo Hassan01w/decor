@@ -4,8 +4,7 @@ import {
   Search, 
   Bookmark, 
   Menu, 
-  X, 
-  ShieldCheck
+  X 
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -25,8 +24,7 @@ export const Header: React.FC<HeaderProps> = ({
     currentPath, 
     navigate, 
     setIsSearchOpen, 
-    savedPostIds, 
-    isAdminAuthenticated
+    savedPostIds
   } = useBlog();
 
   const [internalMenuOpen, setInternalMenuOpen] = useState(false);
@@ -121,19 +119,8 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
           </div>
 
-          {/* Right: Actions (Saved Inspiration + Admin Badge if logged in) */}
-          <div className="flex items-center justify-end gap-1.5 sm:gap-3 lg:w-1/4">
-            {isAdminAuthenticated && (
-              <button
-                onClick={() => navigate('/admin')}
-                className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#2F3A32] hover:bg-[#202722] text-white text-[10px] font-bold uppercase tracking-wider transition-colors border border-[#445248]"
-                title="Go to Admin CMS Dashboard"
-              >
-                <ShieldCheck className="w-3 h-3 text-[#C8A97E]" />
-                <span className="hidden md:inline">Admin CMS</span>
-              </button>
-            )}
-
+          {/* Right: Actions (Saved Inspiration Pins) */}
+          <div className="flex items-center justify-end gap-1.5 sm:gap-2.5 lg:w-1/4">
             <button
               onClick={onOpenSavedDrawer}
               className="relative p-2 sm:p-2.5 rounded-full text-[#242522] hover:bg-[#EFEAE1] transition-colors group cursor-pointer"

@@ -21,8 +21,7 @@ import {
   X,
   Lock,
   RefreshCw,
-  MessageSquare,
-  Radio
+  MessageSquare
 } from 'lucide-react';
 import { 
   canManageHomepage, 
@@ -33,7 +32,6 @@ import {
   canManageUsers,
   ROLE_METADATA 
 } from '../../utils/permissions';
-import { AdminSyncCenterModal } from './AdminSyncCenterModal';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -49,13 +47,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab })
     navigate, 
     posts, 
     subscribers,
-    comments,
-    syncNow
+    comments
   } = useBlog();
 
   const [isUserSwitcherOpen, setIsUserSwitcherOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isSyncModalOpen, setIsSyncModalOpen] = useState(false);
 
   const pendingCommentsCount = comments.filter(c => !c.approved).length;
 
@@ -208,8 +204,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab })
             </div>
           </div>
 
-            {/* Quick Front View Switcher & Live Sync */}
-            <div className="p-4 border-b border-[#2E2925] space-y-2">
+            {/* Quick Front View Switcher */}
+            <div className="p-4 border-b border-[#2E2925]">
               <button
                 onClick={() => { navigate('/'); setIsMobileMenuOpen(false); }}
                 className="w-full py-2.5 px-3.5 bg-[#25221E] hover:bg-[#322C26] text-[#FAF8F5] rounded-xl text-xs font-semibold flex items-center justify-between transition-colors border border-[#38332E] cursor-pointer group"
@@ -219,32 +215,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab })
                   <span>View Public Store</span>
                 </span>
                 <ExternalLink className="w-3.5 h-3.5 text-[#A89F95]" />
-              </button>
-
-              <button
-                onClick={() => setIsSyncModalOpen(true)}
-                className="w-full py-2 px-3.5 bg-[#24211D] hover:bg-[#2F2A24] text-[#D9CFC4] hover:text-white rounded-xl text-xs font-semibold flex items-center justify-between transition-colors border border-[#38332E] cursor-pointer group"
-                title="Open live synchronization and health diagnostics center"
-              >
-                <span className="flex items-center gap-2">
-                  <Radio className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
-                  <span>Live Sync & Diagnostics</span>
-                </span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold">
-                  ACTIVE
-                </span>
-              </button>
-
-              <button
-                onClick={() => syncNow()}
-                className="w-full py-1.5 px-3.5 bg-[#1F1C19] hover:bg-[#2A2520] text-[#A89F95] hover:text-[#D9CFC4] rounded-xl text-[11px] font-medium flex items-center justify-between transition-colors border border-[#2E2925] cursor-pointer"
-                title="Force instantaneous zero-latency sync between Admin CMS and User Store"
-              >
-                <span className="flex items-center gap-1.5">
-                  <RefreshCw className="w-3 h-3 text-[#C4A482]" />
-                  <span>Quick Force Broadcast</span>
-                </span>
-                <span className="text-[9px] text-emerald-400 font-mono">0ms</span>
               </button>
             </div>
 
@@ -370,10 +340,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab })
                 />
                 <div className="min-w-0">
                   <span className="text-xs font-bold text-white block truncate leading-tight">
-                    {currentUser?.name || 'MBI'}
+                    {currentUser?.name || 'Decor Admin'}
                   </span>
                   <span className="text-[10px] text-[#C4A482] font-semibold block leading-tight">
-                    Admin ({currentUser?.username || 'mbi'})
+                    Admin ({currentUser?.username || 'admin'})
                   </span>
                 </div>
                 <ChevronDown className="w-3 h-3 text-[#A89F95] shrink-0" />
@@ -420,16 +390,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab })
 
             <div className="h-4 w-px bg-[#E8DFD5]"></div>
 
-            {/* Live Sync Diagnostics Quick Trigger */}
-            <button
-              onClick={() => setIsSyncModalOpen(true)}
-              className="px-2.5 py-1 bg-white hover:bg-[#F7F4EF] text-[#2D2A26] border border-[#D9CFC4] rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-              title="Open Live Sync and System Diagnostics Center"
-            >
-              <Radio className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
-              <span className="hidden sm:inline">Sync Diagnostics</span>
-            </button>
-
             {/* Quick Add Button */}
             <button
               onClick={() => navigate('/admin/posts/new')}
@@ -441,7 +401,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab })
             {/* Admin Badge */}
             <div className="flex items-center gap-2 pl-1">
               <span className="text-xs font-bold text-[#211E1B]">
-                {currentUser?.name || 'MBI'}
+                {currentUser?.name || 'Decor Admin'}
               </span>
               <span className="text-[10px] uppercase font-bold bg-[#FAF8F5] text-[#8C6D53] border border-[#E8DFD5] px-2 py-0.5 rounded-full">
                 Admin
@@ -455,12 +415,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children, activeTab })
           {children}
         </main>
       </div>
-
-      {/* Live Sync & Diagnostic Center Modal */}
-      <AdminSyncCenterModal 
-        isOpen={isSyncModalOpen} 
-        onClose={() => setIsSyncModalOpen(false)} 
-      />
     </div>
   );
 };

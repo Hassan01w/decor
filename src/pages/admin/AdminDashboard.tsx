@@ -119,22 +119,36 @@ export const AdminDashboard: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            onClick={() => {
+              setIsSyncing(true);
+              syncNow();
+              setTimeout(() => setIsSyncing(false), 600);
+            }}
+            disabled={isSyncing}
+            className="px-3.5 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors cursor-pointer"
+            title="Synchronize blogs across all devices"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-emerald-600' : 'text-emerald-700'}`} />
+            <span>{isSyncing ? 'Syncing...' : 'Sync Blogs'}</span>
+          </button>
+
           <button
             onClick={handleExportBackup}
-            className="px-4 py-2.5 bg-white hover:bg-[#EFE9E1] text-[#2D2A26] border border-[#D9CFC4] rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors shadow-xs cursor-pointer"
+            className="px-3.5 py-2.5 bg-white hover:bg-[#EFE9E1] text-[#2D2A26] border border-[#D9CFC4] rounded-xl text-xs font-semibold flex items-center gap-2 transition-colors shadow-xs cursor-pointer"
             title="Download full CMS JSON backup"
           >
             <Download className="w-4 h-4 text-[#8C6D53]" />
-            <span>Export Backup</span>
+            <span>Backup</span>
           </button>
 
           <button
             onClick={() => navigate('/admin/posts/new')}
-            className="px-5 py-2.5 bg-[#8C6D53] hover:bg-[#735842] text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all shadow-md cursor-pointer"
+            className="px-4 py-2.5 bg-[#8C6D53] hover:bg-[#735842] text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all shadow-md cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Write New Article</span>
+            <span>Write Article</span>
           </button>
         </div>
       </div>
@@ -166,19 +180,19 @@ export const AdminDashboard: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3 text-xs text-[#D9CFC4]">
             <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
               <ShieldCheck className="w-3.5 h-3.5 text-[#C4A482]" />
-              <span>Admins: <strong>MBI</strong> & <strong>Samavia Khan</strong></span>
+              <span>Admin Access: <strong>Editorial Team Active</strong></span>
             </div>
             <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
               <Phone className="w-3.5 h-3.5 text-[#C4A482]" />
-              <span>03364585863</span>
+              <span>{siteSettings.contactPhone || '+1 (800) 458-5863'}</span>
             </div>
             <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
               <Mail className="w-3.5 h-3.5 text-[#C4A482]" />
-              <span>thedecordiarystore@gmail.com</span>
+              <span>{siteSettings.contactEmail || 'thedecordiarystore@gmail.com'}</span>
             </div>
             <div className="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
               <MapPin className="w-3.5 h-3.5 text-[#C4A482]" />
-              <span>Sargodha</span>
+              <span>{siteSettings.contactAddress || 'Design District, NY'}</span>
             </div>
           </div>
         </div>

@@ -281,12 +281,14 @@ export const ArticleDetailPage: React.FC<ArticleDetailPageProps> = ({ slug }) =>
         {post.status !== 'published' && (
           <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between text-xs text-amber-900">
             <span className="font-semibold">⚠️ You are previewing a {post.status.toUpperCase()} article.</span>
-            <button 
-              onClick={() => navigate(`/admin/posts/edit/${post.id}`)}
-              className="underline font-bold cursor-pointer"
-            >
-              Edit in CMS &rarr;
-            </button>
+            {isAdminAuthenticated && (
+              <button 
+                onClick={() => navigate(`/admin/posts/edit/${post.id}`)}
+                className="underline font-bold cursor-pointer"
+              >
+                Edit in CMS &rarr;
+              </button>
+            )}
           </div>
         )}
 

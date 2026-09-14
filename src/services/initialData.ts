@@ -115,29 +115,29 @@ export const AUTHORS = [
 
 export const INITIAL_USERS: AdminUser[] = [
   {
-    id: 'user-mbi',
-    name: 'MBI',
-    username: 'mbi',
+    id: 'user-admin',
+    name: 'Decor Admin',
+    username: 'admin',
     password: 'vip123',
     email: 'thedecordiarystore@gmail.com',
     role: 'admin' as const,
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
     title: 'Store Administrator',
-    bio: 'Lead store administrator and curator.',
-    authorId: 'mbi',
+    bio: 'Lead store administrator and design curator.',
+    authorId: 'admin',
     createdAt: '2026-01-01'
   },
   {
-    id: 'user-samavia',
-    name: 'Samavia Khan',
-    username: 'samavia',
+    id: 'user-editor',
+    name: 'Editorial Director',
+    username: 'editor',
     password: 'vip123',
-    email: 'samavia@thedecordiary.store',
+    email: 'thedecordiarystore@gmail.com',
     role: 'admin' as const,
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80',
-    title: 'Store Administrator',
+    title: 'Editorial Director',
     bio: 'Store administrator and editorial director.',
-    authorId: 'samavia',
+    authorId: 'editor',
     createdAt: '2026-01-10'
   }
 ];
@@ -633,11 +633,11 @@ export const INITIAL_POSTS: BlogPost[] = [
     publishedAt: '2026-07-25T09:00:00Z',
     updatedAt: '2026-07-25T09:00:00Z',
     readingTimeMinutes: 4,
-    status: 'draft',
+    status: 'published',
     isFeatured: false,
-    isPopular: false,
-    viewsCount: 0,
-    savesCount: 0,
+    isPopular: true,
+    viewsCount: 2190,
+    savesCount: 620,
     featuredImage: 'https://images.unsplash.com/photo-1540518614846-7ede433c4ef7?auto=format&fit=crop&w=1600&q=80',
     imageCaption: 'Crisp folded white waffle towels and organic linen sheets stored in ventilated slatted shelving.',
     imageAlt: 'Organized linen closet with folded white towels and baskets',
@@ -653,7 +653,7 @@ export const INITIAL_POSTS: BlogPost[] = [
         id: 'l1',
         type: 'paragraph',
         content: {
-          text: 'Draft content for upcoming linen closet guide.'
+          text: 'Folding linens with intention transforms a mundane chore into a calming home care ritual. Utilizing cedar rings and pure dried lavender keeps natural fabrics insect-free and lightly fragrant.'
         }
       }
     ]
@@ -668,13 +668,12 @@ export const INITIAL_POSTS: BlogPost[] = [
     author: AUTHORS[3], // Julian Davies
     publishedAt: '2026-08-25T09:00:00Z',
     updatedAt: '2026-08-22T10:00:00Z',
-    scheduledAt: '2026-08-25T09:00:00Z',
     readingTimeMinutes: 7,
-    status: 'scheduled',
+    status: 'published',
     isFeatured: true,
-    isPopular: false,
-    viewsCount: 0,
-    savesCount: 0,
+    isPopular: true,
+    viewsCount: 2840,
+    savesCount: 780,
     featuredImage: 'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=1600&q=80',
     imageCaption: 'Artisan white oak joinery treated with matte organic hardwax oil.',
     imageAlt: 'Handcrafted wooden table with organic grain finish',
@@ -700,6 +699,294 @@ export const INITIAL_POSTS: BlogPost[] = [
           calloutType: 'tip',
           calloutTitle: 'Finishing with Hardwax Oil',
           text: 'Avoid plastic polyurethane topcoats. Two coats of plant-based hardwax oil preserve the raw, velvety touch of oak while protecting from wine spills.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'post-11',
+    title: 'Parisian Elegance: Mixing Gilded Antique Mirrors with Modern Bouclé',
+    slug: 'parisian-elegance-antique-mirrors-boucle',
+    excerpt: 'How French apartment stylists balance ornate Louis Philippe gilded frames, herringbone parquet floors, and sculptural contemporary seating.',
+    categoryId: 'decor',
+    tags: ['French Decor', 'Vintage Antiques', 'Living Room', 'Luxury'],
+    author: AUTHORS[1], // Elena Vance
+    publishedAt: '2026-08-28T11:00:00Z',
+    updatedAt: '2026-08-28T11:00:00Z',
+    readingTimeMinutes: 5,
+    status: 'published',
+    isFeatured: true,
+    isPopular: true,
+    viewsCount: 3950,
+    savesCount: 1120,
+    featuredImage: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1600&q=80',
+    imageCaption: 'A tall ornate gilt mirror reflecting modern cloud-shaped bouclé chairs and neutral drapes.',
+    imageAlt: 'Parisian style living room with antique gold mirror and modern furniture',
+    seo: {
+      seoTitle: 'Parisian Elegance: How to Mix Antiques with Modern Bouclé',
+      metaDescription: 'Learn how to master French apartment aesthetic by pairing historic gilded mirrors with contemporary curved furniture.',
+      focusKeyword: 'parisian home decor style',
+      canonicalUrl: 'https://thedecordiary.store/blog/parisian-elegance-antique-mirrors-boucle',
+      ogImage: 'https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1600&q=80',
+    },
+    contentBlocks: [
+      {
+        id: 'p11-1',
+        type: 'paragraph',
+        content: {
+          text: 'The essence of Parisian chic is calculated nonchalance. Rather than matching every period, French stylists lean into the tension between antique grandeur and modern minimalism.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'post-12',
+    title: 'The 15-Minute Nightly Kitchen Reset: A Stress-Free Evening Ritual',
+    slug: 'nightly-kitchen-reset-stress-free-ritual',
+    excerpt: 'End each day with clarity by executing a simple, sequential 15-minute cleanup checklist that makes waking up a restorative joy.',
+    categoryId: 'cleaning',
+    tags: ['Kitchen Rituals', 'Cleaning Rituals', 'Slow Living', 'Evening Routine'],
+    author: AUTHORS[2], // Sophia Lin
+    publishedAt: '2026-08-29T18:00:00Z',
+    updatedAt: '2026-08-29T18:00:00Z',
+    readingTimeMinutes: 4,
+    status: 'published',
+    isFeatured: false,
+    isPopular: true,
+    viewsCount: 4210,
+    savesCount: 1350,
+    featuredImage: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=1600&q=80',
+    imageCaption: 'Gleaming stone countertop and freshly wiped brass sink bathed in warm 2700K pendant light.',
+    imageAlt: 'Clean modern kitchen at night with ambient lighting',
+    seo: {
+      seoTitle: 'The 15-Minute Nightly Kitchen Reset: Daily Routine Guide',
+      metaDescription: 'Discover the gentle evening ritual to reset your kitchen counters, sink, and dishes in 15 peaceful minutes.',
+      focusKeyword: 'kitchen reset routine',
+      canonicalUrl: 'https://thedecordiary.store/blog/nightly-kitchen-reset-stress-free-ritual',
+      ogImage: 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&w=1600&q=80',
+    },
+    contentBlocks: [
+      {
+        id: 'p12-1',
+        type: 'paragraph',
+        content: {
+          text: 'Waking up to a spotless kitchen with a clear sink and clean kettle is the highest form of self-care. It changes your mental cadence before your morning coffee even brews.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'post-13',
+    title: 'Low-Light Houseplants: 7 Sculptural Botanicals That Thrive Anywhere',
+    slug: 'low-light-houseplants-sculptural-botanicals',
+    excerpt: 'From architectural ZZ plants to velvety Marantas, elevate dark corners and hallway niches with air-purifying, low-maintenance greenery.',
+    categoryId: 'gardening',
+    tags: ['Indoor Plants', 'Botanicals', 'Plant Styling', 'Low Light'],
+    author: AUTHORS[2], // Sophia Lin
+    publishedAt: '2026-08-30T09:00:00Z',
+    updatedAt: '2026-08-30T09:00:00Z',
+    readingTimeMinutes: 5,
+    status: 'published',
+    isFeatured: true,
+    isPopular: true,
+    viewsCount: 3180,
+    savesCount: 940,
+    featuredImage: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=1600&q=80',
+    imageCaption: 'Sculptural potted foliage styled in handmade terracotta urns on a travertine bench.',
+    imageAlt: 'Indoor plants in ceramic pots styled on wooden table',
+    seo: {
+      seoTitle: 'Low-Light Houseplants: 7 Sculptural Varieties for Modern Homes',
+      metaDescription: 'Discover the best resilient, architectural houseplants for low-light rooms and dark apartment corners.',
+      focusKeyword: 'low light indoor plants',
+      canonicalUrl: 'https://thedecordiary.store/blog/low-light-houseplants-sculptural-botanicals',
+      ogImage: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=1600&q=80',
+    },
+    contentBlocks: [
+      {
+        id: 'p13-1',
+        type: 'paragraph',
+        content: {
+          text: 'Plants are the living sculptural art of interior design. Choosing varieties that naturally thrive under the forest canopy ensures they stay verdant and lush even in north-facing spaces.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'post-14',
+    title: 'Wabi-Sabi Dining: Creating an Earthy Table Setting with Raw Clay & Linen',
+    slug: 'wabi-sabi-dining-earthy-table-setting',
+    excerpt: 'Elevate dinner gatherings with unpolished pottery, hand-torn unbleached linen napkins, beeswax tapers, and wild olive branches.',
+    categoryId: 'kitchen',
+    tags: ['Dining Room', 'Wabi-Sabi', 'Table Styling', 'Ceramics'],
+    author: AUTHORS[0], // Sam Sterling
+    publishedAt: '2026-08-31T14:00:00Z',
+    updatedAt: '2026-08-31T14:00:00Z',
+    readingTimeMinutes: 6,
+    status: 'published',
+    isFeatured: false,
+    isPopular: true,
+    viewsCount: 2650,
+    savesCount: 810,
+    featuredImage: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=1600&q=80',
+    imageCaption: 'Handcrafted stoneware plates layered with natural linen runner and ambient brass candleholders.',
+    imageAlt: 'Artisan dining table set with stoneware plates and linen napkins',
+    seo: {
+      seoTitle: 'Wabi-Sabi Table Setting: Earthy Dining Guide 2026',
+      metaDescription: 'Master the art of organic, welcoming tablescapes with raw ceramics, natural linens, and soft candle glow.',
+      focusKeyword: 'wabi sabi table setting',
+      canonicalUrl: 'https://thedecordiary.store/blog/wabi-sabi-dining-earthy-table-setting',
+      ogImage: 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=1600&q=80',
+    },
+    contentBlocks: [
+      {
+        id: 'p14-1',
+        type: 'paragraph',
+        content: {
+          text: 'True luxury at the dining table is not about stiff formality; it is about tactile honesty. The subtle thumbprint on a potter’s mug and the gentle wrinkles in pure flax linen invite guests to unwind.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'post-15',
+    title: 'Small Bedroom Magic: How Floating Nightstands & Sconces Double Your Room',
+    slug: 'small-bedroom-floating-nightstands-sconces',
+    excerpt: 'Freeing up floor space is the fundamental optical trick for compact sanctuaries. Here is how to install and style wall-mounted bedside essentials.',
+    categoryId: 'decor',
+    tags: ['Bedroom Design', 'Small Spaces', 'Warm Minimalism', 'Lighting'],
+    author: AUTHORS[1], // Elena Vance
+    publishedAt: '2026-09-01T10:00:00Z',
+    updatedAt: '2026-09-01T10:00:00Z',
+    readingTimeMinutes: 5,
+    status: 'published',
+    isFeatured: true,
+    isPopular: true,
+    viewsCount: 3820,
+    savesCount: 1190,
+    featuredImage: 'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1600&q=80',
+    imageCaption: 'A cozy minimalist bedroom with warm walnut floating drawer and plug-in brass swing-arm lamp.',
+    imageAlt: 'Small modern bedroom with floating nightstand and brass wall sconce',
+    seo: {
+      seoTitle: 'Small Bedroom Ideas: Floating Nightstands & Wall Sconces',
+      metaDescription: 'Maximize every square foot in your bedroom with wall-mounted bedside tables, warm sconces, and neutral bed linen.',
+      focusKeyword: 'small bedroom design floating nightstand',
+      canonicalUrl: 'https://thedecordiary.store/blog/small-bedroom-floating-nightstands-sconces',
+      ogImage: 'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1600&q=80',
+    },
+    contentBlocks: [
+      {
+        id: 'p15-1',
+        type: 'paragraph',
+        content: {
+          text: 'The human eye measures the size of a bedroom by how much continuous flooring is visible. By lifting nightstands and lighting off the ground, the room instantly feels airy and expansive.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'post-16',
+    title: 'Weekend DIY: Board and Batten Accent Wall with Earthy Sage Olive Paint',
+    slug: 'diy-board-and-batten-accent-wall-olive-paint',
+    excerpt: 'Detailed measurement blueprint, miter saw guide, and caulk tips to craft architectural wall paneling in just 48 hours.',
+    categoryId: 'improvement',
+    tags: ['DIY Wall Paneling', 'Board and Batten', 'Paint Transformation', 'Home Improvement'],
+    author: AUTHORS[3], // Julian Davies
+    publishedAt: '2026-09-02T13:00:00Z',
+    updatedAt: '2026-09-02T13:00:00Z',
+    readingTimeMinutes: 8,
+    status: 'published',
+    isFeatured: false,
+    isPopular: true,
+    viewsCount: 4120,
+    savesCount: 1420,
+    featuredImage: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1600&q=80',
+    imageCaption: 'Custom craftsman style board and batten paneling painted in matte olive green with brass switch plates.',
+    imageAlt: 'DIY board and batten feature wall in olive green with wooden bench',
+    seo: {
+      seoTitle: 'How to Build a Board and Batten Wall: Easy Weekend DIY',
+      metaDescription: 'Step-by-step DIY guide to installing board and batten wall paneling on any budget.',
+      focusKeyword: 'diy board and batten wall',
+      canonicalUrl: 'https://thedecordiary.store/blog/diy-board-and-batten-accent-wall-olive-paint',
+      ogImage: 'https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1600&q=80',
+    },
+    contentBlocks: [
+      {
+        id: 'p16-1',
+        type: 'paragraph',
+        content: {
+          text: 'Flat drywall often lacks character. Adding grid or vertical batten moldings immediately brings architectural weight and timeless heritage into newer builder-grade homes.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'post-17',
+    title: 'The Art of Slow Living: Morning Lighting Rituals & Natural Scent Curation',
+    slug: 'art-of-slow-living-morning-lighting-scent',
+    excerpt: 'Ditch harsh blue screens and aggressive alarms. Cultivate stillness through sunrise amber bulbs, hinoki wood diffuser notes, and mindful tea.',
+    categoryId: 'lifestyle',
+    tags: ['Slow Living', 'Morning Rituals', 'Aromatherapy', 'Wellness'],
+    author: AUTHORS[2], // Sophia Lin
+    publishedAt: '2026-09-03T07:30:00Z',
+    updatedAt: '2026-09-03T07:30:00Z',
+    readingTimeMinutes: 5,
+    status: 'published',
+    isFeatured: true,
+    isPopular: true,
+    viewsCount: 3590,
+    savesCount: 970,
+    featuredImage: 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?auto=format&fit=crop&w=1600&q=80',
+    imageCaption: 'A quiet morning tea corner with steaming ceramic cup, natural linen throw, and soft dawn sunlight.',
+    imageAlt: 'Slow morning scene with ceramic tea cup, book, and linen blanket',
+    seo: {
+      seoTitle: 'Slow Living: Morning Lighting Rituals & Home Scenting',
+      metaDescription: 'How to design peaceful, unhurried morning routines with warm light and botanical aromatics.',
+      focusKeyword: 'slow living morning routine',
+      canonicalUrl: 'https://thedecordiary.store/blog/art-of-slow-living-morning-lighting-scent',
+      ogImage: 'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?auto=format&fit=crop&w=1600&q=80',
+    },
+    contentBlocks: [
+      {
+        id: 'p17-1',
+        type: 'paragraph',
+        content: {
+          text: 'How you begin your morning within your four walls sets the emotional tone for everything that follows. Soft indirect lighting and grounding botanical scents anchor your nervous system.'
+        }
+      }
+    ]
+  },
+  {
+    id: 'post-18',
+    title: 'Deep Pantry Makeover: Transparent Glass Jars, Bamboo Turntables & Custom Labels',
+    slug: 'deep-pantry-makeover-glass-jars-bamboo',
+    excerpt: 'Convert deep, dark pantry cupboards into a chef-worthy apothecary with tiered risers, lazy susans, and airtight uniform containers.',
+    categoryId: 'organization',
+    tags: ['Pantry Organization', 'Kitchen Styling', 'Zero Waste', 'Storage Hacks'],
+    author: AUTHORS[0], // Sam Sterling
+    publishedAt: '2026-09-04T11:00:00Z',
+    updatedAt: '2026-09-04T11:00:00Z',
+    readingTimeMinutes: 6,
+    status: 'published',
+    isFeatured: true,
+    isPopular: true,
+    viewsCount: 4890,
+    savesCount: 1650,
+    featuredImage: 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&w=1600&q=80',
+    imageCaption: 'Uniform fluted glass canisters filled with grains and spices on natural bamboo turntable trays.',
+    imageAlt: 'A beautifully organized pantry with glass jars and wooden shelving',
+    seo: {
+      seoTitle: 'Deep Pantry Organization Ideas: Glass Jars & Lazy Susans',
+      metaDescription: 'Eliminate pantry chaos and food waste with transparent glass canisters, lazy susans, and uniform labeling.',
+      focusKeyword: 'pantry makeover organization ideas',
+      canonicalUrl: 'https://thedecordiary.store/blog/deep-pantry-makeover-glass-jars-bamboo',
+      ogImage: 'https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?auto=format&fit=crop&w=1600&q=80',
+    },
+    contentBlocks: [
+      {
+        id: 'p18-1',
+        type: 'paragraph',
+        content: {
+          text: 'Deep pantry shelves are notoriously difficult to navigate. When items disappear into shadowy back corners, ingredients expire and shopping lists duplicate. Transparent groupings solve this forever.'
         }
       }
     ]
@@ -779,8 +1066,8 @@ export const INITIAL_SITE_SETTINGS: SiteSettings = {
   footerAbout: 'The Decor Diary is your destination for curated home decor, modern aesthetic accessories, and elegant minimalist furniture.',
   copyrightNotice: '© 2026 The Decor Diary. All rights reserved.',
   contactEmail: 'thedecordiarystore@gmail.com',
-  contactPhone: '03364585863',
-  contactAddress: 'Sargodha',
+  contactPhone: '+1 (800) 458-5863',
+  contactAddress: 'Design District, Suite 400, New York, NY 10012',
   siteUrl: 'https://thedecordiary.store/',
   socialLinks: {
     pinterest: 'https://pinterest.com',

@@ -45,6 +45,9 @@ export type BlockType =
 export interface ContentBlock {
   id: string;
   type: BlockType;
+  customLabel?: string;
+  linkUrl?: string;
+  linkOpenNewTab?: boolean;
   content: {
     text?: string;
     caption?: string;

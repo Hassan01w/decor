@@ -6,7 +6,6 @@ import { SearchModal } from './components/common/SearchModal';
 import { SavedPostsDrawer } from './components/common/SavedPostsDrawer';
 import { ToastContainer } from './components/common/ToastContainer';
 import { CookieConsentBanner } from './components/common/CookieConsentBanner';
-import { AdminSyncBanner } from './components/common/AdminSyncBanner';
 import { MobileBottomNav } from './components/common/MobileBottomNav';
 import { MobileMenuDrawer } from './components/common/MobileMenuDrawer';
 
@@ -132,11 +131,12 @@ export function App() {
       else if (baseRoute.startsWith('/admin/subscribers')) activeTab = 'subscribers';
       else if (baseRoute.startsWith('/admin/users')) activeTab = 'users';
       else if (baseRoute.startsWith('/admin/settings')) activeTab = 'settings';
+      else if (baseRoute.startsWith('/admin/wordpress')) activeTab = 'wordpress';
 
       return (
         <AdminLayout activeTab={activeTab}>
           {(() => {
-            if (baseRoute === '/admin' || baseRoute === '/admin/dashboard') {
+            if (baseRoute === '/admin' || baseRoute === '/admin/dashboard' || baseRoute === '/admin/wordpress') {
               return <AdminDashboard />;
             }
             if (baseRoute === '/admin/posts/new') {
@@ -253,7 +253,6 @@ export function App() {
       />
       <ToastContainer />
       <CookieConsentBanner />
-      <AdminSyncBanner />
       
       {/* Scroll to top button */}
       {showScrollTop && (

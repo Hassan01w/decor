@@ -19,7 +19,8 @@ import {
   Check,
   Download,
   Upload,
-  X
+  X,
+  RefreshCw
 } from 'lucide-react';
 
 export const AdminPostsList: React.FC = () => {
@@ -37,9 +38,11 @@ export const AdminPostsList: React.FC = () => {
     exportDatabase,
     importDatabase,
     exportBlogs,
-    importBlogs
+    importBlogs,
+    syncNow
   } = useBlog();
 
+  const [isSyncing, setIsSyncing] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'published' | 'scheduled' | 'draft' | 'my_posts' | 'featured' | 'popular'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -359,6 +362,19 @@ export const AdminPostsList: React.FC = () => {
           >
             <Download className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Export DB</span>
+          </button>
+          <button
+            onClick={() => {
+              setIsSyncing(true);
+              syncNow();
+              setTimeout(() => setIsSyncing(false), 600);
+            }}
+            disabled={isSyncing}
+            className="px-3.5 py-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all shadow-sm cursor-pointer"
+            title="Real-Time Sync Blogs across all devices"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-emerald-600' : 'text-emerald-700'}`} />
+            <span>{isSyncing ? 'Syncing...' : 'Sync Blogs'}</span>
           </button>
           <button
             onClick={() => navigate('/admin/posts/new')}

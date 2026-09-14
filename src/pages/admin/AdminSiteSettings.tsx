@@ -232,9 +232,9 @@ export const AdminSiteSettings: React.FC = () => {
               </label>
               <input
                 type="text"
-                value={settings.contactPhone || '03364585863'}
+                value={settings.contactPhone || '+1 (800) 458-5863'}
                 onChange={(e) => setSettings({ ...settings, contactPhone: e.target.value })}
-                placeholder="03364585863"
+                placeholder="+1 (800) 458-5863"
                 className="w-full px-3.5 py-2 bg-[#F7F4EE] border border-[#E5DED2] rounded-xl text-xs font-mono text-[#242522]"
               />
             </div>
@@ -245,9 +245,9 @@ export const AdminSiteSettings: React.FC = () => {
               </label>
               <input
                 type="text"
-                value={settings.contactAddress || 'Sargodha'}
+                value={settings.contactAddress || 'Design District, Suite 400, New York, NY 10012'}
                 onChange={(e) => setSettings({ ...settings, contactAddress: e.target.value })}
-                placeholder="Sargodha"
+                placeholder="Design District, Suite 400, New York, NY 10012"
                 className="w-full px-3.5 py-2 bg-[#F7F4EE] border border-[#E5DED2] rounded-xl text-xs text-[#242522]"
               />
             </div>

@@ -1,0 +1,42 @@
+/*
+Theme Name: The Decor Diary
+Theme URI: https://thedecordiary.store/
+Author: The Decor Diary Editorial Studio
+Author URI: https://thedecordiary.store/
+Description: Modern aesthetic interior design, editorial lifestyle magazine and luxury home decor store theme. Powered by The Decor Diary React engine with live cross-device blog sync, interactive carousel sliders, responsive reader drawer, and complete WordPress REST API integration.
+Version: 1.0.0
+Requires at least: 5.8
+Tested up to: 6.7
+Requires PHP: 7.4
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: thedecordiary
+Tags: blog, e-commerce, custom-colors, custom-menu, featured-images, full-width-template, theme-options, translation-ready, rtl-language-support
+*/
+
+/* 
+ * The Decor Diary - Base Typography & Structural Reset 
+ * Frontend dynamic layout is handled by the high-performance bundle.
+ */
+:root {
+  --color-canvas: #F7F4EE;
+  --color-primary: #242522;
+  --color-accent: #2F3A32;
+  --color-sand: #8C6D53;
+  --color-border: #E5DED2;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-canvas);
+  color: var(--color-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}

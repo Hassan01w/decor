@@ -11,13 +11,12 @@ import {
   Home, 
   BookOpen, 
   Layers, 
-  LayoutDashboard, 
-  ShieldCheck, 
   Sparkles, 
   ArrowRight,
   ExternalLink,
   Mail,
-  Info
+  Info,
+  Lock
 } from 'lucide-react';
 
 interface MobileMenuDrawerProps {
@@ -39,9 +38,7 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
     setIsSearchOpen, 
     savedPostIds, 
     categories,
-    publishedPosts,
-    isAdminAuthenticated,
-    currentUser
+    publishedPosts
   } = useBlog();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -311,41 +308,8 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
           </div>
         </div>
 
-        {/* Drawer Footer: Admin Access & Copyright */}
+        {/* Drawer Footer: Copyright & Admin Portal */}
         <div className="p-4 border-t border-[#E5DED2] bg-white/70 space-y-3 pb-8 mt-4">
-          {isAdminAuthenticated ? (
-            <div className="space-y-2 p-3 bg-[#FAF8F5] rounded-xl border border-[#E8DFD5]">
-              <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-[#242522] truncate">
-                  {currentUser?.name || 'Administrator'}
-                </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold uppercase tracking-wider">
-                  {currentUser?.role || 'Admin'}
-                </span>
-              </div>
-              <button
-                onClick={() => {
-                  onClose();
-                  navigate('/admin');
-                }}
-                className="w-full py-2.5 px-3 rounded-xl bg-[#2F3A32] hover:bg-[#202722] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-colors"
-              >
-                <LayoutDashboard className="w-4 h-4 text-[#C8A97E]" />
-                <span>Open Admin CMS Dashboard</span>
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => {
-                onClose();
-                navigate('/admin/login');
-              }}
-              className="w-full py-2.5 text-center text-xs font-medium text-[#7A7369] hover:text-[#242522] transition-colors border border-dashed border-[#D9CFC4] hover:border-[#8C6D53] rounded-xl bg-white/50 cursor-pointer"
-            >
-              Author & Editorial CMS Portal &rarr;
-            </button>
-          )}
-
           <div className="text-center space-y-1">
             <p className="text-[10px] text-[#A89F95]">
               &copy; {new Date().getFullYear()} {siteSettings.siteName || siteSettings.logoText || 'The Decor Diary'}. All rights reserved.
@@ -353,6 +317,18 @@ export const MobileMenuDrawer: React.FC<MobileMenuDrawerProps> = ({
             <p className="text-[9px] text-[#8C6D53] uppercase tracking-widest font-semibold">
               Curated Editorial & Home Aesthetics
             </p>
+          </div>
+          <div className="pt-2 flex justify-center">
+            <button
+              onClick={() => {
+                onClose();
+                navigate('/admin');
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs text-[#8C8578] hover:text-[#2F3A32] hover:bg-[#EFEAE1] transition-colors cursor-pointer"
+            >
+              <Lock className="w-3 h-3 text-[#8C6D53]" />
+              <span>Admin Portal</span>
+            </button>
           </div>
         </div>
 

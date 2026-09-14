@@ -9,7 +9,8 @@ import {
   Twitter,
   Facebook,
   Youtube,
-  Mail
+  Mail,
+  Lock
 } from 'lucide-react';
 
 export const Footer: React.FC = () => {
@@ -230,8 +231,16 @@ export const Footer: React.FC = () => {
         {/* Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#8C8578]">
           <p>{siteSettings.copyrightNotice}</p>
-          <div className="flex items-center gap-6">
-            <span>🌿 Natural + Luxury + Minimal + Warm</span>
+          <div className="flex items-center gap-5 sm:gap-6">
+            <span className="hidden md:inline">🌿 Natural + Luxury + Minimal + Warm</span>
+            <button 
+              onClick={() => navigate('/admin')}
+              className="hover:text-[#C8A97E] transition-colors cursor-pointer flex items-center gap-1.5 opacity-75 hover:opacity-100"
+              title="Staff & Editorial CMS Admin Login"
+            >
+              <Lock className="w-3 h-3 text-[#C8A97E]" />
+              <span>Admin Portal</span>
+            </button>
             <button 
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
               className="text-[#C8A97E] hover:underline cursor-pointer"

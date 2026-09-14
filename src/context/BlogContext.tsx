@@ -119,19 +119,25 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [previewPostData, setPreviewPostData] = useState<BlogPost | null>(null);
   
   // Custom path routing for smooth client-side SPA in all environments
-  const [currentPath, setCurrentPath] = useState<string>(() => {
-    const hash = window.location.hash.slice(1);
-    // Legacy support: if there's a hash, replace it with standard path
-    if (hash && hash.startsWith('/')) {
-      window.history.replaceState(null, '', hash);
-      return hash.replace(/\/+/g, '/');
+  const resolveCurrentLocation = (): string => {
+    const rawHash = window.location.hash.replace(/^#\/?/, '');
+    if (rawHash) {
+      const normalized = '/' + rawHash.replace(/\/+/g, '/');
+      try {
+        window.history.replaceState(null, '', normalized);
+      } catch {
+        // ignore in iframe security context
+      }
+      return normalized;
     }
     const pathname = window.location.pathname;
     if (pathname && pathname !== '/index.html') {
       return pathname.replace(/\/+/g, '/');
     }
     return '/';
-  });
+  };
+
+  const [currentPath, setCurrentPath] = useState<string>(() => resolveCurrentLocation());
 
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -155,19 +161,31 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   useEffect(() => {
+    // Initial fetch from server to immediately display any articles posted by other users/admins
+    StorageService.syncWithServer().then(() => {
+      reloadFromStorage();
+    });
+
     const unsubscribe = subscribeToStorage(() => {
       reloadFromStorage();
     });
 
     const handleFocus = () => {
-      reloadFromStorage();
+      StorageService.syncWithServer().then(res => {
+        if (res.newPostsFound) reloadFromStorage();
+        else reloadFromStorage();
+      });
     };
     window.addEventListener('focus', handleFocus);
 
-    // Heartbeat sync every 15 seconds to ensure scheduled posts and multi-tab changes sync seamlessly
+    // Heartbeat real-time sync every 10 seconds so any post added by User A appears for User B without reloading
     const interval = setInterval(() => {
-      reloadFromStorage();
-    }, 15000);
+      StorageService.syncWithServer().then(res => {
+        if (res.newPostsFound) {
+          reloadFromStorage();
+        }
+      });
+    }, 10000);
 
     return () => {
       unsubscribe();
@@ -182,7 +200,9 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       !siteSettings.logoText ||
       siteSettings.logoText.toUpperCase().includes('HAVEN') ||
       (siteSettings.siteName && siteSettings.siteName.toUpperCase().includes('HAVEN')) ||
-      (siteSettings.logoSubtext && siteSettings.logoSubtext.toUpperCase().includes('LIFESTYLE JOURNAL'))
+      (siteSettings.logoSubtext && siteSettings.logoSubtext.toUpperCase().includes('LIFESTYLE JOURNAL')) ||
+      siteSettings.contactPhone === '03364585863' ||
+      siteSettings.contactAddress === 'Sargodha'
     ) {
       const sanitized: SiteSettings = {
         ...siteSettings,
@@ -191,26 +211,36 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         logoSubtext: 'ONLINE HOME DECOR STORE',
         siteTagline: 'Your Home Decor Destination',
         siteUrl: 'https://thedecordiary.store/',
-        contactPhone: '03364585863',
-        contactAddress: 'Sargodha',
+        contactPhone: '+1 (800) 458-5863',
+        contactAddress: 'Design District, Suite 400, New York, NY 10012',
         contactEmail: 'thedecordiarystore@gmail.com'
       };
       setSiteSettings(sanitized);
       StorageService.saveSiteSettings(sanitized);
     }
-  }, [siteSettings.logoText, siteSettings.siteName, siteSettings.logoSubtext]);
+  }, [siteSettings.logoText, siteSettings.siteName, siteSettings.logoSubtext, siteSettings.contactPhone, siteSettings.contactAddress]);
 
-  // Listen to browser back/forward changes
+  // Listen to browser back/forward and hash changes
   useEffect(() => {
-    const handlePopState = () => {
-      const pathname = window.location.pathname;
-      const resolved = (pathname && pathname !== '/index.html') ? pathname : '/';
-      setCurrentPath(resolved.replace(/\/+/g, '/'));
+    const handleNavigationChange = () => {
+      setCurrentPath(resolveCurrentLocation());
     };
 
-    window.addEventListener('popstate', handlePopState);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Shortcut: Alt+A or Ctrl+Shift+A opens Admin Portal directly from any page
+      if ((e.altKey && (e.key === 'a' || e.key === 'A')) || (e.ctrlKey && e.shiftKey && (e.key === 'a' || e.key === 'A'))) {
+        e.preventDefault();
+        navigate('/admin');
+      }
+    };
+
+    window.addEventListener('popstate', handleNavigationChange);
+    window.addEventListener('hashchange', handleNavigationChange);
+    window.addEventListener('keydown', handleKeyDown);
     return () => {
-      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('popstate', handleNavigationChange);
+      window.removeEventListener('hashchange', handleNavigationChange);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
@@ -266,8 +296,8 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       (isMasterPassword && (
         trimmedUser === 'vip123' || 
         trimmedUser === 'admin' || 
-        trimmedUser === 'mbi' || 
-        trimmedUser === 'samavia' ||
+        trimmedUser === 'editor' || 
+        trimmedUser === 'thedecordiary' ||
         !trimmedUser ||
         Boolean(user)
       ));
@@ -527,9 +557,13 @@ export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const syncNow = () => {
-    StorageService.syncNow();
-    reloadFromStorage();
-    showToast('Everything is synchronized between user and admin.', 'success');
+    StorageService.syncNow().then(res => {
+      reloadFromStorage();
+      showToast(`Synchronized! ${res.count} articles live and aligned across all devices.`, 'success');
+    }).catch(() => {
+      reloadFromStorage();
+      showToast('Articles synchronized with storage.', 'info');
+    });
   };
 
   // Only public published stories (or scheduled stories whose time has arrived)

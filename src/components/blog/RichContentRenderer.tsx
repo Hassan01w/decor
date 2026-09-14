@@ -35,10 +35,11 @@ export const RichContentRenderer: React.FC<RichContentRendererProps> = ({ blocks
         if (!block) return null;
         const { type, id } = block;
         const content = block.content || {};
+        const linkUrl = block.linkUrl;
+        const linkOpenNewTab = block.linkOpenNewTab ?? true;
 
         switch (type) {
           case 'paragraph': {
-            // First paragraph dropcap styling for editorial charm
             const isFirst = index === 0;
             const text = content.text || '';
             if (!text) return null;
@@ -47,32 +48,67 @@ export const RichContentRenderer: React.FC<RichContentRendererProps> = ({ blocks
                 key={id || index} 
                 className={`${isFirst ? 'editorial-dropcap text-lg sm:text-xl font-normal text-[#2D2A26]' : 'text-base sm:text-lg'} leading-relaxed text-[#3B342F]`}
               >
-                {text}
+                {linkUrl ? (
+                  <a 
+                    href={linkUrl} 
+                    target={linkOpenNewTab ? "_blank" : "_self"} 
+                    rel={linkOpenNewTab ? "noopener noreferrer" : undefined}
+                    className="underline decoration-[#8C6D53]/60 hover:decoration-[#8C6D53] hover:text-[#8C6D53] transition-colors inline"
+                  >
+                    {text}
+                  </a>
+                ) : (
+                  text
+                )}
               </p>
             );
           }
 
-          case 'heading2':
+          case 'heading2': {
             if (!content.text) return null;
             return (
               <h2 
                 key={id || index} 
                 className="font-serif text-2xl sm:text-3xl font-bold text-[#211E1B] pt-6 pb-1 tracking-tight border-b border-[#EFE9E1]"
               >
-                {content.text}
+                {linkUrl ? (
+                  <a 
+                    href={linkUrl} 
+                    target={linkOpenNewTab ? "_blank" : "_self"} 
+                    rel={linkOpenNewTab ? "noopener noreferrer" : undefined}
+                    className="hover:text-[#8C6D53] transition-colors"
+                  >
+                    {content.text}
+                  </a>
+                ) : (
+                  content.text
+                )}
               </h2>
             );
+          }
 
-          case 'heading3':
+          case 'heading3': {
             if (!content.text) return null;
             return (
               <h3 
                 key={id || index} 
                 className="font-serif text-xl sm:text-2xl font-bold text-[#2D2A26] pt-4 tracking-tight"
               >
-                {content.text}
+                {linkUrl ? (
+                  <a 
+                    href={linkUrl} 
+                    target={linkOpenNewTab ? "_blank" : "_self"} 
+                    rel={linkOpenNewTab ? "noopener noreferrer" : undefined}
+                    className="hover:text-[#8C6D53] transition-colors"
+                  >
+                    {content.text}
+                  </a>
+                ) : (
+                  content.text
+                )}
               </h3>
             );
+          }
 
           case 'image': {
             if (!content.url) return null;
@@ -82,21 +118,36 @@ export const RichContentRenderer: React.FC<RichContentRendererProps> = ({ blocks
               content.caption || articleTitle || 'The Decor Diary'
             );
 
+            const imageElement = (
+              <img
+                src={content.url}
+                alt={content.alt || content.caption || 'Article illustration'}
+                loading="lazy"
+                className="w-full h-auto max-h-[650px] object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+              />
+            );
+
             return (
               <figure key={id || index} className="my-8 space-y-3 group">
                 <div className="relative overflow-hidden rounded-2xl bg-[#EFE9E1] border border-[#E8DFD5]">
-                  <img
-                    src={content.url}
-                    alt={content.alt || content.caption || 'Article illustration'}
-                    loading="lazy"
-                    className="w-full h-auto max-h-[650px] object-cover transition-transform duration-500 group-hover:scale-[1.02]"
-                  />
+                  {linkUrl ? (
+                    <a
+                      href={linkUrl}
+                      target={linkOpenNewTab ? "_blank" : "_self"}
+                      rel={linkOpenNewTab ? "noopener noreferrer" : undefined}
+                      className="block cursor-pointer"
+                    >
+                      {imageElement}
+                    </a>
+                  ) : (
+                    imageElement
+                  )}
                   {/* Pinterest Pin Button */}
                   <a
                     href={pinUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="absolute top-4 left-4 bg-[#E60023] hover:bg-[#C9001D] text-white px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-lg opacity-90 hover:opacity-100 transition-all"
+                    className="absolute top-4 left-4 bg-[#E60023] hover:bg-[#C9001D] text-white px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-lg opacity-90 hover:opacity-100 transition-all z-10"
                     title="Pin this image to Pinterest"
                   >
                     <Share2 className="w-3.5 h-3.5" />
@@ -122,7 +173,18 @@ export const RichContentRenderer: React.FC<RichContentRendererProps> = ({ blocks
                 <div className="flex gap-3">
                   <Quote className="w-8 h-8 text-[#8C6D53] shrink-0 opacity-40 -mt-1" />
                   <p className="font-serif text-lg sm:text-xl italic font-medium text-[#211E1B] leading-relaxed">
-                    "{content.text}"
+                    {linkUrl ? (
+                      <a 
+                        href={linkUrl} 
+                        target={linkOpenNewTab ? "_blank" : "_self"} 
+                        rel={linkOpenNewTab ? "noopener noreferrer" : undefined}
+                        className="hover:text-[#8C6D53] transition-colors"
+                      >
+                        "{content.text}"
+                      </a>
+                    ) : (
+                      `"${content.text}"`
+                    )}
                   </p>
                 </div>
                 {content.author && (
@@ -156,7 +218,18 @@ export const RichContentRenderer: React.FC<RichContentRendererProps> = ({ blocks
               >
                 <div className="flex items-center gap-2 font-bold text-sm sm:text-base">
                   <Icon className={`w-5 h-5 shrink-0 ${iconColor}`} />
-                  <span>{content.calloutTitle || 'Editorial Note'}</span>
+                  {linkUrl ? (
+                    <a
+                      href={linkUrl}
+                      target={linkOpenNewTab ? "_blank" : "_self"}
+                      rel={linkOpenNewTab ? "noopener noreferrer" : undefined}
+                      className="hover:underline hover:text-[#8C6D53] transition-colors"
+                    >
+                      {content.calloutTitle || 'Editorial Note'} &rarr;
+                    </a>
+                  ) : (
+                    <span>{content.calloutTitle || 'Editorial Note'}</span>
+                  )}
                 </div>
                 {content.text && (
                   <p className="text-sm sm:text-base leading-relaxed pl-7">
